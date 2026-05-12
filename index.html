@@ -53,7 +53,7 @@
                         <i data-lucide="trash-2" style="width:16px;height:16px"></i>
                     </button>
                     <button class="secondary" style="padding: 0.5rem 0.75rem;" onclick="document.getElementById('base-icon-upload').click()">
-                        <i data-lucide="upload" style="width:16px;height:16px"></i> Upload Base Icon
+                        <i data-lucide="upload" style="width:16px;height:16px"></i> Upload Base Image
                     </button>
                     <input type="file" id="base-icon-upload" accept="image/*" style="display: none" onchange="handleBaseIconUpload(event)">
                 </div>
@@ -136,14 +136,18 @@
 
             <div class="control-group">
                 <label>Icon Picker (<a href="https://lucide.dev/icons" target="_blank" style="color: inherit; text-decoration: underline; text-underline-offset: 2px;">Lucide</a>)</label>
-                <input type="text" id="icon-input" name="lucide-icon-input" placeholder="e.g. users, gauge, dumbbell, mail..." oninput="setIcon(this.value)" autocomplete="off" autocapitalize="off">
+                <div class="icon-picker-wrapper">
+                    <input type="text" id="icon-input" name="icon-search" placeholder="e.g. users, gauge, dumbbell, bell..." oninput="handleIconInput(this.value)" onfocus="showSuggestions()" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false">
+                    <div id="icon-dropdown" class="icon-dropdown"></div>
+                </div>
                 <div class="icon-suggestions">
-                    Try: <span style="cursor:pointer;text-decoration:underline" onclick="setIcon('dumbbell')">dumbbell</span>, 
-                    <span style="cursor:pointer;text-decoration:underline" onclick="setIcon('users')">users</span>, 
-                    <span style="cursor:pointer;text-decoration:underline" onclick="setIcon('gauge')">gauge</span>, 
-                    <span style="cursor:pointer;text-decoration:underline" onclick="setIcon('mail')">mail</span>, 
-                    <span style="cursor:pointer;text-decoration:underline" onclick="setIcon('settings')">settings</span>, 
-                    <span style="cursor:pointer;text-decoration:underline" onclick="setIcon('search')">search</span>
+                    Try: 
+                    <span class="suggestion-tag" onclick="setIcon('dumbbell')">dumbbell</span>, 
+                    <span class="suggestion-tag" onclick="setIcon('users')">users</span>, 
+                    <span class="suggestion-tag" onclick="setIcon('gauge')">gauge</span>, 
+                    <span class="suggestion-tag" onclick="setIcon('mail')">mail</span>, 
+                    <span class="suggestion-tag" onclick="setIcon('settings')">settings</span>, 
+                    <span class="suggestion-tag" onclick="setIcon('search')">search</span>
                 </div>
             </div>
 
@@ -173,7 +177,7 @@
 
             <div class="control-group">
                 <div class="range-header">
-                    <label>Base Icon Size</label>
+                    <label>Base Image Size</label>
                     <span class="range-val"><span id="base-size-val">80</span>%</span>
                 </div>
                 <input type="range" id="base-size-input" min="50" max="100" value="80" oninput="setBaseSize(this.value)">
