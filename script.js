@@ -72,9 +72,27 @@ function syncStateToURL() {
         params.delete('mode');
     }
 
+    // Move 'img' to the end and shorten it if possible
+    if (state.customBaseIcon && state.customBaseIcon.startsWith('http')) {
+        let displayUrl = state.customBaseIcon;
+        const prefix = 'https://res.cloudinary.com/rm20abcd26/image/upload/';
+        if (displayUrl.startsWith(prefix)) {
+            displayUrl = 'cld:' + displayUrl.replace(prefix, '');
+        }
+        params.set('img', displayUrl);
+    } else {
+        params.delete('img');
+    }
+
     const newSearch = params.toString();
     const newUrl = window.location.pathname + (newSearch ? '?' + newSearch : '');
     
+    // Toggle Copy URL button visibility
+    const copyBtn = document.getElementById('copy-url-btn');
+    if (copyBtn) {
+        copyBtn.style.display = newSearch ? 'flex' : 'none';
+    }
+
     if (window.location.search !== (newSearch ? '?' + newSearch : '')) {
         window.history.replaceState({}, '', newUrl);
     }
@@ -96,6 +114,13 @@ function loadStateFromURL() {
     if (params.has('scale')) state.innerScale = parseInt(params.get('scale'));
     if (params.has('bsize')) state.baseSize = parseInt(params.get('bsize'));
     if (params.has('shadows')) state.showShadows = params.get('shadows') === 'true';
+    if (params.has('img')) {
+        let val = params.get('img');
+        if (val.startsWith('cld:')) {
+            val = 'https://res.cloudinary.com/rm20abcd26/image/upload/' + val.replace('cld:', '');
+        }
+        state.customBaseIcon = val;
+    }
 
     if (params.get('mode') === 'screenshot') {
         document.body.classList.add('screenshot-mode');
@@ -171,24 +196,82 @@ function setBaseShape(s) {
     syncStateToURL();
 }
 
-function handleBaseIconUpload(event) {
+async function handleBaseIconUpload(event) {
     const file = event.target.files[0];
     if (!file) return;
 
-    if (file.size > 2 * 1024 * 1024) {
-        alert('Image is too large. Please use an image under 2MB.');
+    // 1. Strict File Size Check (4MB)
+    if (file.size > 4 * 1024 * 1024) {
+        alert('Image is too large (max 4MB). Please choose a smaller file.');
         return;
     }
 
-    const reader = new FileReader();
-    reader.onload = (e) => {
-        const dataUrl = e.target.result;
-        state.customBaseIcon = dataUrl;
-        document.getElementById('base-img').src = dataUrl;
-        localStorage.setItem('iconStudio_baseIcon', dataUrl);
+    // 2. Dimension Check (max 1500px)
+    const imgLoader = new Image();
+    const objectUrl = URL.createObjectURL(file);
+    
+    try {
+        await new Promise((resolve, reject) => {
+            imgLoader.onload = () => {
+                if (imgLoader.width > 1500 || imgLoader.height > 1500) {
+                    reject(`Image dimensions are too large (${imgLoader.width}x${imgLoader.height}). Max allowed is 1500px on the longest side.`);
+                }
+                resolve();
+            };
+            imgLoader.onerror = () => reject('Could not read image file.');
+            imgLoader.src = objectUrl;
+        });
+    } catch (error) {
+        alert(error);
+        URL.revokeObjectURL(objectUrl);
+        return;
+    }
+    URL.revokeObjectURL(objectUrl);
+
+    const imgEl = document.getElementById('base-img');
+    const originalOpacity = imgEl.style.opacity || '1';
+    imgEl.style.opacity = '0.4';
+
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('upload_preset', 'iconBadgeStudio');
+    formData.append('folder', 'User Uploads - Icon Badge Studio');
+
+    try {
+        const response = await fetch('https://api.cloudinary.com/v1_1/rm20abcd26/image/upload', {
+            method: 'POST',
+            body: formData
+        });
+        
+        if (!response.ok) throw new Error('Cloudinary limit reached or error');
+        
+        const data = await response.json();
+        const imageUrl = data.secure_url;
+
+        state.customBaseIcon = imageUrl;
+        imgEl.src = imageUrl;
+        localStorage.setItem('iconStudio_baseIcon', imageUrl);
+    } catch (err) {
+        console.warn('Cloudinary upload failed, falling back to local storage:', err);
+        alert('Cloud upload failed (sharing will be disabled). Saving locally instead...');
+        
+        // Fallback: Read as DataURL
+        const reader = new FileReader();
+        await new Promise((resolve) => {
+            reader.onload = (e) => {
+                const dataUrl = e.target.result;
+                state.customBaseIcon = dataUrl;
+                imgEl.src = dataUrl;
+                localStorage.setItem('iconStudio_baseIcon', dataUrl);
+                resolve();
+            };
+            reader.readAsDataURL(file);
+        });
+    } finally {
+        imgEl.style.opacity = originalOpacity;
         updateRemoveButtonVisibility();
-    };
-    reader.readAsDataURL(file);
+        syncStateToURL();
+    }
 }
 
 function resetBaseIcon() {
@@ -436,6 +519,29 @@ async function exportPNG() {
         document.body.classList.remove('screenshot-mode');
         btn.innerHTML = originalText;
         btn.disabled = false;
+    }
+}
+
+async function copyURL() {
+    const btn = document.getElementById('copy-url-btn');
+    const originalContent = btn.innerHTML;
+    
+    try {
+        await navigator.clipboard.writeText(window.location.href);
+        
+        // Success state
+        btn.innerHTML = '<i data-lucide="check" style="width:18px;height:18px"></i> Copied!';
+        btn.classList.add('success');
+        lucide.createIcons();
+        
+        setTimeout(() => {
+            btn.innerHTML = originalContent;
+            btn.classList.remove('success');
+            lucide.createIcons();
+        }, 2000);
+    } catch (err) {
+        console.error('Failed to copy:', err);
+        alert('Failed to copy URL to clipboard.');
     }
 }
 

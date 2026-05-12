@@ -6,30 +6,32 @@ A simple, web-based tool for creating professional icons with customizable badge
 
 ## Features
 
-- **Add Your Base Icon Image**: Upload your own image to start.
+- **Custom Base Image Upload**: Upload your own image to start.
 - **Advanced Badge Shaping**: Choose from Circle, Squircle, Hexagon, Diamond, and Shield shapes.
-- **Color Picker**: Choose from a selection of colors for your icon and badge, or choose your own.
-- **Precision Controls**: Adjust badge size, icon scale, and position across all four corners.
+- **Color Picker**: Choose from preset colors or use the custom picker for any hex code.
+- **Precision Controls**: Adjust badge size, icon scale, and rotation across all four corners.
 - **Lucide Icon Integration**: Access thousands of icons by name.
 - **Export Options**: High-quality PNG export and a dedicated "Screenshot Mode" for clean captures.
-- **Smart URL State**: Share your designs instantly—every adjustment is synced to the URL.
-- **Auto-Contrast**: The badge icon color automatically adjusts for optimal readability against its background.
+- **Smart URL State**: Every adjustment is synced to the URL for instant sharing and bookmarking.
+- **Fail-Safe Local Storage**: If cloud uploading fails, the app automatically falls back to local storage so you can keep working.
+- **Auto-Contrast**: Badge icons automatically switch between light and dark based on the background color.
 
 ## Built With
 
 - **Vanilla HTML5/CSS3**: No heavy frameworks.
 - **JavaScript**: Custom logic for real-time rendering and state management.
+- **[Cloudinary](https://cloudinary.com/)**: For fast, reliable image hosting and sharing.
 - **[Lucide](https://lucide.dev/)**: A vast library of beautiful, consistent icons.
 - **[dom-to-image](https://github.com/tsayen/dom-to-image)**: For high-quality canvas exporting.
 - **Google Fonts**: Featuring 'Outfit' and 'Inter' for a modern feel.
 
-## Screenshot Mode
+## Sharing & URL Synchronization
 
-Enter Screenshot Mode to hide all UI controls, allowing you to take clean screenshots.
+The application state (colors, shapes, icons, and even your uploaded base image) is synchronized with URL parameters. 
 
-## URL Synchronization
-
-The application state (icon choice, colors, shapes, etc.) is saved to URL parameters. This means you can bookmark a specific design or share it with a colleague just by copying the address bar.
+- **Copy URL Button**: Use the built-in "Copy URL" button to quickly grab a shareable link and start collaborating.
+- **Image Hosting**: Uploaded images are hosted securely and added to the URL.
+- **Validation**: To ensure fast performance, uploads are limited to 4MB and 1500px on the longest side.
 
 ---
 
