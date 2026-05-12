@@ -502,6 +502,12 @@ button.secondary:hover {
     background: rgba(255, 255, 255, 0.05);
 }
 
+button.secondary.success {
+    border-color: #22c55e;
+    color: #22c55e;
+    background: rgba(34, 197, 94, 0.05);
+}
+
 button.danger {
     background: rgba(239, 68, 68, 0.1);
     border: 1px solid rgba(239, 68, 68, 0.2);
