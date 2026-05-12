@@ -502,6 +502,25 @@ button.secondary:hover {
     background: rgba(255, 255, 255, 0.05);
 }
 
+button.danger {
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.2);
+    color: #f87171;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+button.danger:hover {
+    background: rgba(239, 68, 68, 0.2);
+    border-color: rgba(239, 68, 68, 0.4);
+    color: #ef4444;
+}
+
 .screenshot-mode .controls-section,
 .screenshot-mode .preview-header,
 .screenshot-mode .preview-actions,
@@ -687,7 +706,7 @@ button.secondary:hover {
 
 .range-val {
     font-size: 0.75rem;
-    color: var(--accent);
+    color: white;
     font-weight: 600;
 }
 

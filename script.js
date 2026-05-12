@@ -129,9 +129,19 @@ function init() {
 
     if (state.customBaseIcon) {
         document.getElementById('base-img').src = state.customBaseIcon;
+        document.getElementById('remove-base-icon').style.display = 'flex';
     }
 
     lucide.createIcons();
+}
+
+function updateRemoveButtonVisibility() {
+    const btn = document.getElementById('remove-base-icon');
+    if (state.customBaseIcon) {
+        btn.style.display = 'flex';
+    } else {
+        btn.style.display = 'none';
+    }
 }
 
 function setShape(s) {
@@ -176,6 +186,7 @@ function handleBaseIconUpload(event) {
         state.customBaseIcon = dataUrl;
         document.getElementById('base-img').src = dataUrl;
         localStorage.setItem('iconStudio_baseIcon', dataUrl);
+        updateRemoveButtonVisibility();
     };
     reader.readAsDataURL(file);
 }
@@ -185,6 +196,7 @@ function resetBaseIcon() {
     document.getElementById('base-img').src = 'assets/img/base-placeholder.svg';
     localStorage.removeItem('iconStudio_baseIcon');
     document.getElementById('base-icon-upload').value = '';
+    updateRemoveButtonVisibility();
 }
 
 function setBadgePosition(pos) {
