@@ -169,6 +169,45 @@ function init() {
 
     // Disable right-click on the capture area
     document.getElementById('capture-area').addEventListener('contextmenu', (e) => e.preventDefault());
+
+    // Setup dynamic scaling
+    window.addEventListener('resize', updateAppScale);
+    updateAppScale();
+}
+
+function updateAppScale() {
+    const container = document.getElementById('tool-container');
+    if (!container || document.body.classList.contains('screenshot-mode')) {
+        document.documentElement.style.setProperty('--app-scale', '1');
+        return;
+    }
+
+    const isMobile = window.innerWidth <= 950;
+    
+    if (isMobile) {
+        // On mobile, if the screen is narrower than our mobile max-width (600px), scale down
+        if (window.innerWidth < 640) {
+            const scale = Math.min(1, (window.innerWidth - 32) / 400); // 32px for padding
+            document.documentElement.style.setProperty('--app-scale', Math.max(0.7, scale));
+        } else {
+            document.documentElement.style.setProperty('--app-scale', '1');
+        }
+        return;
+    }
+
+    // Desktop scaling
+    const targetWidth = 1050; 
+    const targetHeight = 850;
+    
+    const scaleW = window.innerWidth / targetWidth;
+    const scaleH = (window.innerHeight - 40) / targetHeight; // 40px buffer
+    
+    let scale = Math.min(scaleW, scaleH);
+    
+    // Clamp scale: don't go below 0.8 on desktop, and cap at 1.4
+    scale = Math.min(Math.max(scale, 0.8), 1.4);
+    
+    document.documentElement.style.setProperty('--app-scale', scale);
 }
 
 let ALL_ICONS = [];
@@ -651,6 +690,7 @@ function resetDefaults() {
 
 function toggleScreenshotMode() {
     document.body.classList.toggle('screenshot-mode');
+    updateAppScale();
     syncStateToURL();
 }
 
