@@ -19,6 +19,7 @@ const state = {
     badgePosition: 'bottom-right',
     showShadows: true,
     baseShape: 'squircle',
+    baseColor: '#1b0573',
     customBaseIcon: localStorage.getItem('iconStudio_baseIcon') || null
 };
 
@@ -36,14 +37,15 @@ function syncStateToURL() {
         rotation: 0,
         badgePosition: 'bottom-right',
         showShadows: true,
-        baseShape: 'squircle'
+        baseShape: 'squircle',
+        baseColor: '#1b0573'
     };
 
     const setOrDelete = (key, val, def) => {
         let displayVal = val;
         let compareDef = def;
         
-        if (key === 'color') {
+        if (key === 'color' || key === 'bcolor') {
             if (typeof val === 'string' && val.startsWith('#')) displayVal = val.slice(1);
             if (typeof def === 'string' && def.startsWith('#')) compareDef = def.slice(1);
         }
@@ -64,6 +66,7 @@ function syncStateToURL() {
     setOrDelete('rot', state.rotation, defaults.rotation);
     setOrDelete('scale', state.innerScale, defaults.innerScale);
     setOrDelete('bsize', state.baseSize, defaults.baseSize);
+    setOrDelete('bcolor', state.baseColor, defaults.baseColor);
     setOrDelete('shadows', state.showShadows, defaults.showShadows);
 
     if (document.body.classList.contains('screenshot-mode')) {
@@ -72,7 +75,8 @@ function syncStateToURL() {
         params.delete('mode');
     }
 
-    // Move 'img' to the end and shorten it if possible
+    // Always move 'img' to the end
+    params.delete('img');
     if (state.customBaseIcon && state.customBaseIcon.startsWith('http')) {
         let displayUrl = state.customBaseIcon;
         const prefix = 'https://res.cloudinary.com/rm20abcd26/image/upload/';
@@ -80,8 +84,6 @@ function syncStateToURL() {
             displayUrl = 'cld:' + displayUrl.replace(prefix, '');
         }
         params.set('img', displayUrl);
-    } else {
-        params.delete('img');
     }
 
     const newSearch = params.toString();
@@ -113,6 +115,10 @@ function loadStateFromURL() {
     if (params.has('rot')) state.rotation = parseInt(params.get('rot'));
     if (params.has('scale')) state.innerScale = parseInt(params.get('scale'));
     if (params.has('bsize')) state.baseSize = parseInt(params.get('bsize'));
+    if (params.has('bcolor')) {
+        const bc = params.get('bcolor');
+        state.baseColor = bc.startsWith('#') ? bc : '#' + bc;
+    }
     if (params.has('shadows')) state.showShadows = params.get('shadows') === 'true';
     if (params.has('img')) {
         let val = params.get('img');
@@ -151,6 +157,7 @@ function init() {
     setBadgePosition(state.badgePosition);
     toggleShadows(state.showShadows);
     setBaseShape(state.baseShape);
+    setBaseColor(state.baseColor);
 
     if (state.customBaseIcon) {
         document.getElementById('base-img').src = state.customBaseIcon;
@@ -317,12 +324,55 @@ function setShape(s) {
 function setBaseShape(s) {
     state.baseShape = s;
     const img = document.getElementById('base-img');
+    const bg = document.getElementById('base-bg');
     img.className = 'base-icon ' + s;
+    if (bg) bg.className = 'base-bg ' + s;
     
     document.querySelectorAll('[data-base-shape]').forEach(btn => {
         btn.classList.toggle('active', btn.dataset.baseShape === s);
     });
     syncStateToURL();
+}
+
+function setBaseColor(c) {
+    state.baseColor = c;
+    const bg = document.getElementById('base-bg');
+    const picker = document.getElementById('base-bg-color');
+    const swatch = picker.parentElement;
+    
+    // If it's the default blue, show the gradient. Otherwise solid.
+    if (bg) {
+        if (c.toLowerCase() === '#1b0573') {
+            bg.style.background = 'linear-gradient(135deg, #4603e3, #1b0573)';
+        } else {
+            bg.style.background = 'none';
+            bg.style.backgroundColor = c;
+        }
+    }
+    
+    picker.value = c;
+    swatch.style.backgroundColor = c;
+
+    // Contrast awareness for placeholder text (only if no custom icon)
+    updateBaseIconFilter();
+    
+    syncStateToURL();
+}
+
+function updateBaseIconFilter() {
+    const img = document.getElementById('base-img');
+    if (!img) return;
+
+    const shadow = state.showShadows ? 'drop-shadow(0 10px 15px rgba(0,0,0,0.3))' : '';
+    
+    // If it's the placeholder, we check contrast for the "YOUR ICON" text
+    if (!state.customBaseIcon) {
+        const isLightBg = getContrastColor(state.baseColor) === '#0f172a';
+        const brightness = isLightBg ? 'brightness(0.05)' : 'brightness(1)';
+        img.style.filter = `${shadow} ${brightness}`.trim() || 'none';
+    } else {
+        img.style.filter = shadow || 'none';
+    }
 }
 
 async function handleBaseIconUpload(event) {
@@ -408,6 +458,7 @@ function resetBaseIcon() {
     document.getElementById('base-img').src = 'assets/img/base-placeholder.svg';
     localStorage.removeItem('iconStudio_baseIcon');
     document.getElementById('base-icon-upload').value = '';
+    setBaseColor('#1b0573');
     updateRemoveButtonVisibility();
 }
 
@@ -512,8 +563,15 @@ function setBaseSize(v) {
     const input = document.getElementById('base-size-input');
     if (input) input.value = v;
     const img = document.getElementById('base-img');
-    img.style.width = v + '%';
-    img.style.height = v + '%';
+    const bg = document.getElementById('base-bg');
+    if (img) {
+        img.style.width = v + '%';
+        img.style.height = v + '%';
+    }
+    if (bg) {
+        bg.style.width = v + '%';
+        bg.style.height = v + '%';
+    }
     syncStateToURL();
 }
 
@@ -561,10 +619,9 @@ function toggleShadows(v) {
     if (t1) t1.checked = v;
     if (t2) t2.checked = v;
 
-    const base = document.getElementById('base-img');
     const badge = document.getElementById('badge-wrap');
     
-    base.style.filter = v ? 'drop-shadow(0 10px 15px rgba(0,0,0,0.3))' : 'none';
+    updateBaseIconFilter();
     badge.style.filter = v ? 'drop-shadow(0 12px 20px rgba(0,0,0,0.4))' : 'none';
     syncStateToURL();
 }
@@ -580,6 +637,7 @@ function resetDefaults() {
     setBadgePosition('bottom-right');
     toggleShadows(true);
     setBaseShape('squircle');
+    setBaseColor('#1b0573');
     document.getElementById('shadow-toggle').checked = true;
     
     // Update range inputs

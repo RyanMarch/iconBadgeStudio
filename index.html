@@ -49,18 +49,29 @@
             <div class="preview-header">
                 <h1>Icon Badge Studio</h1>
                 <div class="header-actions">
-                    <button id="remove-base-icon" class="danger" style="width: 36px; padding: 0.5rem; display: none;" onclick="resetBaseIcon()" title="Remove uploaded image">
-                        <i data-lucide="trash-2" style="width:16px;height:16px"></i>
-                    </button>
-                    <button class="secondary" style="padding: 0.5rem 0.75rem;" onclick="document.getElementById('base-icon-upload').click()">
-                        <i data-lucide="upload" style="width:16px;height:16px"></i> Upload Base Image
-                    </button>
+                    <div style="display: flex; flex-direction: column; gap: 0.4rem; align-items: flex-end;">
+                        <div style="display: flex; gap: 0.5rem; width: 100%; align-items: stretch;">
+                            <button id="remove-base-icon" class="danger" style="width: 40px; display: none; padding: 0; justify-content: center;" onclick="resetBaseIcon()" title="Remove uploaded image">
+                                <i data-lucide="trash-2" style="width:16px;height:16px"></i>
+                            </button>
+                            <button class="secondary" style="padding: 0.5rem 0.75rem; flex: 1; white-space: nowrap;" onclick="document.getElementById('base-icon-upload').click()">
+                                <i data-lucide="upload" style="width:16px;height:16px"></i> Upload Base Image
+                            </button>
+                        </div>
+                        <div class="base-bg-control" style="display: flex; align-items: center; gap: 0.5rem;">
+                            <label for="base-bg-color" style="font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600; letter-spacing: 0.02em; cursor: pointer;">Base background color</label>
+                            <div class="base-color-picker" title="Base Background Color">
+                                <input type="color" id="base-bg-color" value="#ffffff" oninput="setBaseColor(this.value)">
+                            </div>
+                        </div>
+                    </div>
                     <input type="file" id="base-icon-upload" accept="image/*" style="display: none" onchange="handleBaseIconUpload(event)">
                 </div>
             </div>
 
             <div class="icon-canvas-wrapper" id="capture-area">
                 <div class="icon-canvas pos-bottom-right" id="icon-canvas">
+                    <div class="base-bg squircle" id="base-bg"></div>
                     <img src="assets/img/base-placeholder.svg" alt="Placeholder Icon" class="base-icon" id="base-img">
                     <div class="badge-container pos-bottom-right" id="badge-wrap">
                         <div class="badge-shape circle" id="badge-shape"></div>
