@@ -157,8 +157,137 @@ function init() {
         document.getElementById('remove-base-icon').style.display = 'flex';
     }
 
+    fetchIconList();
+    lucide.createIcons();
+
+    // Disable right-click on the capture area
+    document.getElementById('capture-area').addEventListener('contextmenu', (e) => e.preventDefault());
+}
+
+let ALL_ICONS = [];
+
+async function fetchIconList() {
+    // Check cache first (valid for 24 hours)
+    const cached = localStorage.getItem('lucide_icons_cache');
+    const cacheTime = localStorage.getItem('lucide_icons_cache_time');
+    const now = Date.now();
+    
+    if (cached && cacheTime && (now - cacheTime < 24 * 60 * 60 * 1000)) {
+        ALL_ICONS = JSON.parse(cached);
+        return;
+    }
+
+    try {
+        const response = await fetch('https://cdn.jsdelivr.net/npm/lucide-static/tags.json');
+        const data = await response.json();
+        ALL_ICONS = Object.keys(data);
+        
+        // Update cache
+        localStorage.setItem('lucide_icons_cache', JSON.stringify(ALL_ICONS));
+        localStorage.setItem('lucide_icons_cache_time', now.toString());
+    } catch (err) {
+        console.error('Failed to fetch Lucide icon list:', err);
+        if (cached) {
+            ALL_ICONS = JSON.parse(cached);
+        } else {
+            ALL_ICONS = ['users', 'user', 'settings', 'mail', 'bell', 'search', 'home', 'star', 'heart', 'check', 'x', 'plus', 'minus'];
+        }
+    }
+}
+
+function handleIconInput(val) {
+    setIcon(val, false);
+    filterSuggestions(val);
+}
+
+function showSuggestions() {
+    const dropdown = document.getElementById('icon-dropdown');
+    dropdown.classList.add('active');
+    filterSuggestions(document.getElementById('icon-input').value);
+}
+
+let selectedIndex = -1;
+
+function filterSuggestions(val) {
+    const dropdown = document.getElementById('icon-dropdown');
+    const query = val.toLowerCase();
+    
+    const filtered = ALL_ICONS
+        .filter(icon => icon.includes(query))
+        .sort((a, b) => {
+            // 1. Exact match first
+            if (a === query) return -1;
+            if (b === query) return 1;
+            // 2. Starts with query second
+            const aStarts = a.startsWith(query);
+            const bStarts = b.startsWith(query);
+            if (aStarts && !bStarts) return -1;
+            if (bStarts && !aStarts) return 1;
+            // 3. Alphabetical otherwise
+            return a.localeCompare(b);
+        })
+        .slice(0, 48);
+    
+    if (filtered.length === 0) {
+        dropdown.classList.remove('active');
+        selectedIndex = -1;
+        return;
+    }
+
+    dropdown.innerHTML = filtered.map((icon, idx) => `
+        <div class="dropdown-item ${idx === selectedIndex ? 'selected' : ''}" onclick="setIcon('${icon}')" title="${icon}" data-index="${idx}">
+            <i data-lucide="${icon}"></i>
+        </div>
+    `).join('');
+    
+    dropdown.classList.add('active');
     lucide.createIcons();
 }
+
+// Keyboard navigation
+document.getElementById('icon-input').addEventListener('keydown', (e) => {
+    const dropdown = document.getElementById('icon-dropdown');
+    const items = dropdown.querySelectorAll('.dropdown-item');
+    
+    if (!dropdown.classList.contains('active') || items.length === 0) {
+        if (e.key === 'ArrowDown') showSuggestions();
+        return;
+    }
+
+    if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        selectedIndex = (selectedIndex + 1) % items.length;
+        updateSelection(items);
+    } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        selectedIndex = (selectedIndex - 1 + items.length) % items.length;
+        updateSelection(items);
+    } else if (e.key === 'Enter') {
+        if (selectedIndex >= 0) {
+            e.preventDefault();
+            const iconName = items[selectedIndex].title;
+            setIcon(iconName);
+        }
+    } else if (e.key === 'Escape') {
+        dropdown.classList.remove('active');
+    }
+});
+
+function updateSelection(items) {
+    items.forEach((item, idx) => {
+        item.classList.toggle('selected', idx === selectedIndex);
+        if (idx === selectedIndex) {
+            item.scrollIntoView({ block: 'nearest' });
+        }
+    });
+}
+
+// Close dropdown when clicking outside
+document.addEventListener('click', (e) => {
+    if (!e.target.closest('.icon-picker-wrapper')) {
+        document.getElementById('icon-dropdown').classList.remove('active');
+    }
+});
 
 function updateRemoveButtonVisibility() {
     const btn = document.getElementById('remove-base-icon');
@@ -335,8 +464,11 @@ function setColor(c) {
     syncStateToURL();
 }
 
-function setIcon(name) {
-    if (!name) return;
+function setIcon(name, shouldHideDropdown = true) {
+    if (shouldHideDropdown) {
+        document.getElementById('icon-dropdown').classList.remove('active');
+        selectedIndex = -1;
+    }
     state.icon = name;
     document.getElementById('icon-input').value = name;
     const target = document.getElementById('badge-icon-target');

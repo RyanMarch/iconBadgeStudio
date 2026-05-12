@@ -163,7 +163,7 @@ h1 {
 .badge-container.pos-bottom-left { bottom: 8%; left: 8%; }
 .badge-container.pos-bottom-right { bottom: 8%; right: 8%; }
 
-/* Base Icon Compensation - opposite corner of badge */
+/* Base Image Compensation - opposite corner of badge */
 .icon-canvas.pos-top-left .base-icon { bottom: 4%; right: 4%; }
 .icon-canvas.pos-top-right .base-icon { bottom: 4%; left: 4%; }
 .icon-canvas.pos-bottom-left .base-icon { top: 4%; right: 4%; }
@@ -272,7 +272,10 @@ label {
     display: block;
 }
 
-input[type="text"], select {
+input[type="text"], 
+input[type="number"],
+select {
+    width: 100%;
     background: rgba(15, 23, 42, 0.5);
     border: 1px solid var(--glass-border);
     border-radius: 8px;
@@ -694,7 +697,78 @@ button.danger:hover {
 .icon-suggestions {
     font-size: 0.7rem;
     color: var(--text-muted);
-    margin-top: 0.25rem;
+    margin-top: 0.35rem;
+    line-height: 1.4;
+}
+
+.suggestion-tag {
+    cursor: pointer;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    transition: color 0.2s;
+    color: var(--text-muted);
+}
+
+.suggestion-tag:hover {
+    color: var(--text-main);
+}
+
+.icon-picker-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+.icon-dropdown {
+    position: absolute;
+    top: calc(100% + 5px);
+    left: 0;
+    right: 0;
+    background: rgba(30, 41, 59, 0.95);
+    backdrop-filter: blur(16px);
+    border: 1px solid var(--glass-border);
+    border-radius: 10px;
+    max-height: 240px;
+    overflow-y: auto;
+    z-index: 100;
+    display: none;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+    padding: 0.5rem;
+}
+
+.icon-dropdown.active {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(40px, 1fr));
+    gap: 4px;
+}
+
+.dropdown-item {
+    aspect-ratio: 1/1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: var(--text-muted);
+}
+
+.dropdown-item:hover, .dropdown-item.selected {
+    background: rgba(59, 130, 246, 0.2);
+    color: white;
+}
+
+.dropdown-item svg {
+    width: 20px;
+    height: 20px;
+}
+
+.icon-dropdown::-webkit-scrollbar {
+    width: 4px;
+}
+
+.icon-dropdown::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
 }
 
 .range-control {

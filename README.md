@@ -6,11 +6,11 @@ A simple, web-based tool for creating professional icons with customizable badge
 
 ## Features
 
-- **Custom Base Image Upload**: Upload your own image to start.
+- **Custom Base Image Upload**: Upload your own image as the base.
 - **Advanced Badge Shaping**: Choose from Circle, Squircle, Hexagon, Diamond, and Shield shapes.
 - **Color Picker**: Choose from preset colors or use the custom picker for any hex code.
 - **Precision Controls**: Adjust badge size, icon scale, and rotation across all four corners.
-- **Lucide Icon Integration**: Access thousands of icons by name.
+- **Lucide Icon Integration**: Access thousands of icons by name, including suggestions as you type.
 - **Export Options**: High-quality PNG export and a dedicated "Screenshot Mode" for clean captures.
 - **Smart URL State**: Every adjustment is synced to the URL for instant sharing and bookmarking.
 - **Fail-Safe Local Storage**: If cloud uploading fails, the app automatically falls back to local storage so you can keep working.
