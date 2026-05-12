@@ -1,8 +1,8 @@
 # Icon Badge Studio
 
-A premium, web-based tool for creating professional icons with customizable badges. Built with a focus on aesthetics, speed, and ease of use.
+A simple, web-based tool for creating professional icons with customizable badges.
 
-[![Launch App](https://img.shields.io/badge/Launch-Icon_Badge_Studio-blueviolet?style=for-the-badge&logo=rocket)](https://iconbadgestudio.ryanmarch.me)
+[![Launch App](https://img.shields.io/badge/Launch_Icon_Badge_Studio-blue?style=for-the-badge)](https://iconbadgestudio.ryanmarch.me)
 
 ## Features
 
