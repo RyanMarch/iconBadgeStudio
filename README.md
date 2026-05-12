@@ -6,7 +6,7 @@ A simple, web-based tool for creating professional icons with customizable badge
 
 ## Features
 
-- **Custom Base Image Upload**: Upload your own image as the base.
+- **Custom Base Image Upload**: Upload your own image as the base and set a background color if needed.
 - **Advanced Badge Shaping**: Choose from Circle, Squircle, Hexagon, Diamond, and Shield shapes.
 - **Color Picker**: Choose from preset colors or use the custom picker for any hex code.
 - **Precision Controls**: Adjust badge size, icon scale, and rotation across all four corners.
