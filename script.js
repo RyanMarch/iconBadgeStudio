@@ -19,6 +19,7 @@ const state = {
     badgePosition: 'bottom-right',
     showShadows: true,
     baseShape: 'squircle',
+    baseColor: '#1b0573',
     customBaseIcon: localStorage.getItem('iconStudio_baseIcon') || null
 };
 
@@ -36,14 +37,15 @@ function syncStateToURL() {
         rotation: 0,
         badgePosition: 'bottom-right',
         showShadows: true,
-        baseShape: 'squircle'
+        baseShape: 'squircle',
+        baseColor: '#1b0573'
     };
 
     const setOrDelete = (key, val, def) => {
         let displayVal = val;
         let compareDef = def;
         
-        if (key === 'color') {
+        if (key === 'color' || key === 'bcolor') {
             if (typeof val === 'string' && val.startsWith('#')) displayVal = val.slice(1);
             if (typeof def === 'string' && def.startsWith('#')) compareDef = def.slice(1);
         }
@@ -64,6 +66,7 @@ function syncStateToURL() {
     setOrDelete('rot', state.rotation, defaults.rotation);
     setOrDelete('scale', state.innerScale, defaults.innerScale);
     setOrDelete('bsize', state.baseSize, defaults.baseSize);
+    setOrDelete('bcolor', state.baseColor, defaults.baseColor);
     setOrDelete('shadows', state.showShadows, defaults.showShadows);
 
     if (document.body.classList.contains('screenshot-mode')) {
@@ -72,9 +75,26 @@ function syncStateToURL() {
         params.delete('mode');
     }
 
+    // Always move 'img' to the end
+    params.delete('img');
+    if (state.customBaseIcon && state.customBaseIcon.startsWith('http')) {
+        let displayUrl = state.customBaseIcon;
+        const prefix = 'https://res.cloudinary.com/rm20abcd26/image/upload/';
+        if (displayUrl.startsWith(prefix)) {
+            displayUrl = 'cld:' + displayUrl.replace(prefix, '');
+        }
+        params.set('img', displayUrl);
+    }
+
     const newSearch = params.toString();
     const newUrl = window.location.pathname + (newSearch ? '?' + newSearch : '');
     
+    // Toggle Copy URL button visibility
+    const copyBtn = document.getElementById('copy-url-btn');
+    if (copyBtn) {
+        copyBtn.style.display = newSearch ? 'flex' : 'none';
+    }
+
     if (window.location.search !== (newSearch ? '?' + newSearch : '')) {
         window.history.replaceState({}, '', newUrl);
     }
@@ -95,7 +115,18 @@ function loadStateFromURL() {
     if (params.has('rot')) state.rotation = parseInt(params.get('rot'));
     if (params.has('scale')) state.innerScale = parseInt(params.get('scale'));
     if (params.has('bsize')) state.baseSize = parseInt(params.get('bsize'));
+    if (params.has('bcolor')) {
+        const bc = params.get('bcolor');
+        state.baseColor = bc.startsWith('#') ? bc : '#' + bc;
+    }
     if (params.has('shadows')) state.showShadows = params.get('shadows') === 'true';
+    if (params.has('img')) {
+        let val = params.get('img');
+        if (val.startsWith('cld:')) {
+            val = 'https://res.cloudinary.com/rm20abcd26/image/upload/' + val.replace('cld:', '');
+        }
+        state.customBaseIcon = val;
+    }
 
     if (params.get('mode') === 'screenshot') {
         document.body.classList.add('screenshot-mode');
@@ -126,14 +157,144 @@ function init() {
     setBadgePosition(state.badgePosition);
     toggleShadows(state.showShadows);
     setBaseShape(state.baseShape);
+    setBaseColor(state.baseColor);
 
     if (state.customBaseIcon) {
         document.getElementById('base-img').src = state.customBaseIcon;
         document.getElementById('remove-base-icon').style.display = 'flex';
     }
 
+    fetchIconList();
+    lucide.createIcons();
+
+    // Disable right-click on the capture area
+    document.getElementById('capture-area').addEventListener('contextmenu', (e) => e.preventDefault());
+}
+
+let ALL_ICONS = [];
+
+async function fetchIconList() {
+    // Check cache first (valid for 24 hours)
+    const cached = localStorage.getItem('lucide_icons_cache');
+    const cacheTime = localStorage.getItem('lucide_icons_cache_time');
+    const now = Date.now();
+    
+    if (cached && cacheTime && (now - cacheTime < 24 * 60 * 60 * 1000)) {
+        ALL_ICONS = JSON.parse(cached);
+        return;
+    }
+
+    try {
+        const response = await fetch('https://cdn.jsdelivr.net/npm/lucide-static/tags.json');
+        const data = await response.json();
+        ALL_ICONS = Object.keys(data);
+        
+        // Update cache
+        localStorage.setItem('lucide_icons_cache', JSON.stringify(ALL_ICONS));
+        localStorage.setItem('lucide_icons_cache_time', now.toString());
+    } catch (err) {
+        console.error('Failed to fetch Lucide icon list:', err);
+        if (cached) {
+            ALL_ICONS = JSON.parse(cached);
+        } else {
+            ALL_ICONS = ['users', 'user', 'settings', 'mail', 'bell', 'search', 'home', 'star', 'heart', 'check', 'x', 'plus', 'minus'];
+        }
+    }
+}
+
+function handleIconInput(val) {
+    setIcon(val, false);
+    filterSuggestions(val);
+}
+
+function showSuggestions() {
+    const dropdown = document.getElementById('icon-dropdown');
+    dropdown.classList.add('active');
+    filterSuggestions(document.getElementById('icon-input').value);
+}
+
+let selectedIndex = -1;
+
+function filterSuggestions(val) {
+    const dropdown = document.getElementById('icon-dropdown');
+    const query = val.toLowerCase();
+    
+    const filtered = ALL_ICONS
+        .filter(icon => icon.includes(query))
+        .sort((a, b) => {
+            // 1. Exact match first
+            if (a === query) return -1;
+            if (b === query) return 1;
+            // 2. Starts with query second
+            const aStarts = a.startsWith(query);
+            const bStarts = b.startsWith(query);
+            if (aStarts && !bStarts) return -1;
+            if (bStarts && !aStarts) return 1;
+            // 3. Alphabetical otherwise
+            return a.localeCompare(b);
+        })
+        .slice(0, 48);
+    
+    if (filtered.length === 0) {
+        dropdown.classList.remove('active');
+        selectedIndex = -1;
+        return;
+    }
+
+    dropdown.innerHTML = filtered.map((icon, idx) => `
+        <div class="dropdown-item ${idx === selectedIndex ? 'selected' : ''}" onclick="setIcon('${icon}')" title="${icon}" data-index="${idx}">
+            <i data-lucide="${icon}"></i>
+        </div>
+    `).join('');
+    
+    dropdown.classList.add('active');
     lucide.createIcons();
 }
+
+// Keyboard navigation
+document.getElementById('icon-input').addEventListener('keydown', (e) => {
+    const dropdown = document.getElementById('icon-dropdown');
+    const items = dropdown.querySelectorAll('.dropdown-item');
+    
+    if (!dropdown.classList.contains('active') || items.length === 0) {
+        if (e.key === 'ArrowDown') showSuggestions();
+        return;
+    }
+
+    if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        selectedIndex = (selectedIndex + 1) % items.length;
+        updateSelection(items);
+    } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        selectedIndex = (selectedIndex - 1 + items.length) % items.length;
+        updateSelection(items);
+    } else if (e.key === 'Enter') {
+        if (selectedIndex >= 0) {
+            e.preventDefault();
+            const iconName = items[selectedIndex].title;
+            setIcon(iconName);
+        }
+    } else if (e.key === 'Escape') {
+        dropdown.classList.remove('active');
+    }
+});
+
+function updateSelection(items) {
+    items.forEach((item, idx) => {
+        item.classList.toggle('selected', idx === selectedIndex);
+        if (idx === selectedIndex) {
+            item.scrollIntoView({ block: 'nearest' });
+        }
+    });
+}
+
+// Close dropdown when clicking outside
+document.addEventListener('click', (e) => {
+    if (!e.target.closest('.icon-picker-wrapper')) {
+        document.getElementById('icon-dropdown').classList.remove('active');
+    }
+});
 
 function updateRemoveButtonVisibility() {
     const btn = document.getElementById('remove-base-icon');
@@ -163,7 +324,9 @@ function setShape(s) {
 function setBaseShape(s) {
     state.baseShape = s;
     const img = document.getElementById('base-img');
+    const bg = document.getElementById('base-bg');
     img.className = 'base-icon ' + s;
+    if (bg) bg.className = 'base-bg ' + s;
     
     document.querySelectorAll('[data-base-shape]').forEach(btn => {
         btn.classList.toggle('active', btn.dataset.baseShape === s);
@@ -171,24 +334,123 @@ function setBaseShape(s) {
     syncStateToURL();
 }
 
-function handleBaseIconUpload(event) {
+function setBaseColor(c) {
+    state.baseColor = c;
+    const bg = document.getElementById('base-bg');
+    const picker = document.getElementById('base-bg-color');
+    const swatch = picker.parentElement;
+    
+    // If it's the default blue, show the gradient. Otherwise solid.
+    if (bg) {
+        if (c.toLowerCase() === '#1b0573') {
+            bg.style.background = 'linear-gradient(135deg, #4603e3, #1b0573)';
+        } else {
+            bg.style.background = 'none';
+            bg.style.backgroundColor = c;
+        }
+    }
+    
+    picker.value = c;
+    swatch.style.backgroundColor = c;
+
+    // Contrast awareness for placeholder text (only if no custom icon)
+    updateBaseIconFilter();
+    
+    syncStateToURL();
+}
+
+function updateBaseIconFilter() {
+    const img = document.getElementById('base-img');
+    if (!img) return;
+
+    const shadow = state.showShadows ? 'drop-shadow(0 10px 15px rgba(0,0,0,0.3))' : '';
+    
+    // If it's the placeholder, we check contrast for the "YOUR ICON" text
+    if (!state.customBaseIcon) {
+        const isLightBg = getContrastColor(state.baseColor) === '#0f172a';
+        const brightness = isLightBg ? 'brightness(0.05)' : 'brightness(1)';
+        img.style.filter = `${shadow} ${brightness}`.trim() || 'none';
+    } else {
+        img.style.filter = shadow || 'none';
+    }
+}
+
+async function handleBaseIconUpload(event) {
     const file = event.target.files[0];
     if (!file) return;
 
-    if (file.size > 2 * 1024 * 1024) {
-        alert('Image is too large. Please use an image under 2MB.');
+    // 1. Strict File Size Check (4MB)
+    if (file.size > 4 * 1024 * 1024) {
+        alert('Image is too large (max 4MB). Please choose a smaller file.');
         return;
     }
 
-    const reader = new FileReader();
-    reader.onload = (e) => {
-        const dataUrl = e.target.result;
-        state.customBaseIcon = dataUrl;
-        document.getElementById('base-img').src = dataUrl;
-        localStorage.setItem('iconStudio_baseIcon', dataUrl);
+    // 2. Dimension Check (max 1500px)
+    const imgLoader = new Image();
+    const objectUrl = URL.createObjectURL(file);
+    
+    try {
+        await new Promise((resolve, reject) => {
+            imgLoader.onload = () => {
+                if (imgLoader.width > 1500 || imgLoader.height > 1500) {
+                    reject(`Image dimensions are too large (${imgLoader.width}x${imgLoader.height}). Max allowed is 1500px on the longest side.`);
+                }
+                resolve();
+            };
+            imgLoader.onerror = () => reject('Could not read image file.');
+            imgLoader.src = objectUrl;
+        });
+    } catch (error) {
+        alert(error);
+        URL.revokeObjectURL(objectUrl);
+        return;
+    }
+    URL.revokeObjectURL(objectUrl);
+
+    const imgEl = document.getElementById('base-img');
+    const originalOpacity = imgEl.style.opacity || '1';
+    imgEl.style.opacity = '0.4';
+
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('upload_preset', 'iconBadgeStudio');
+    formData.append('folder', 'User Uploads - Icon Badge Studio');
+
+    try {
+        const response = await fetch('https://api.cloudinary.com/v1_1/rm20abcd26/image/upload', {
+            method: 'POST',
+            body: formData
+        });
+        
+        if (!response.ok) throw new Error('Cloudinary limit reached or error');
+        
+        const data = await response.json();
+        const imageUrl = data.secure_url;
+
+        state.customBaseIcon = imageUrl;
+        imgEl.src = imageUrl;
+        localStorage.setItem('iconStudio_baseIcon', imageUrl);
+    } catch (err) {
+        console.warn('Cloudinary upload failed, falling back to local storage:', err);
+        alert('Cloud upload failed (sharing will be disabled). Saving locally instead...');
+        
+        // Fallback: Read as DataURL
+        const reader = new FileReader();
+        await new Promise((resolve) => {
+            reader.onload = (e) => {
+                const dataUrl = e.target.result;
+                state.customBaseIcon = dataUrl;
+                imgEl.src = dataUrl;
+                localStorage.setItem('iconStudio_baseIcon', dataUrl);
+                resolve();
+            };
+            reader.readAsDataURL(file);
+        });
+    } finally {
+        imgEl.style.opacity = originalOpacity;
         updateRemoveButtonVisibility();
-    };
-    reader.readAsDataURL(file);
+        syncStateToURL();
+    }
 }
 
 function resetBaseIcon() {
@@ -196,6 +458,7 @@ function resetBaseIcon() {
     document.getElementById('base-img').src = 'assets/img/base-placeholder.svg';
     localStorage.removeItem('iconStudio_baseIcon');
     document.getElementById('base-icon-upload').value = '';
+    setBaseColor('#1b0573');
     updateRemoveButtonVisibility();
 }
 
@@ -252,8 +515,11 @@ function setColor(c) {
     syncStateToURL();
 }
 
-function setIcon(name) {
-    if (!name) return;
+function setIcon(name, shouldHideDropdown = true) {
+    if (shouldHideDropdown) {
+        document.getElementById('icon-dropdown').classList.remove('active');
+        selectedIndex = -1;
+    }
     state.icon = name;
     document.getElementById('icon-input').value = name;
     const target = document.getElementById('badge-icon-target');
@@ -297,8 +563,15 @@ function setBaseSize(v) {
     const input = document.getElementById('base-size-input');
     if (input) input.value = v;
     const img = document.getElementById('base-img');
-    img.style.width = v + '%';
-    img.style.height = v + '%';
+    const bg = document.getElementById('base-bg');
+    if (img) {
+        img.style.width = v + '%';
+        img.style.height = v + '%';
+    }
+    if (bg) {
+        bg.style.width = v + '%';
+        bg.style.height = v + '%';
+    }
     syncStateToURL();
 }
 
@@ -346,10 +619,9 @@ function toggleShadows(v) {
     if (t1) t1.checked = v;
     if (t2) t2.checked = v;
 
-    const base = document.getElementById('base-img');
     const badge = document.getElementById('badge-wrap');
     
-    base.style.filter = v ? 'drop-shadow(0 10px 15px rgba(0,0,0,0.3))' : 'none';
+    updateBaseIconFilter();
     badge.style.filter = v ? 'drop-shadow(0 12px 20px rgba(0,0,0,0.4))' : 'none';
     syncStateToURL();
 }
@@ -365,6 +637,7 @@ function resetDefaults() {
     setBadgePosition('bottom-right');
     toggleShadows(true);
     setBaseShape('squircle');
+    setBaseColor('#1b0573');
     document.getElementById('shadow-toggle').checked = true;
     
     // Update range inputs
@@ -436,6 +709,29 @@ async function exportPNG() {
         document.body.classList.remove('screenshot-mode');
         btn.innerHTML = originalText;
         btn.disabled = false;
+    }
+}
+
+async function copyURL() {
+    const btn = document.getElementById('copy-url-btn');
+    const originalContent = btn.innerHTML;
+    
+    try {
+        await navigator.clipboard.writeText(window.location.href);
+        
+        // Success state
+        btn.innerHTML = '<i data-lucide="check" style="width:18px;height:18px"></i> Copied!';
+        btn.classList.add('success');
+        lucide.createIcons();
+        
+        setTimeout(() => {
+            btn.innerHTML = originalContent;
+            btn.classList.remove('success');
+            lucide.createIcons();
+        }, 2000);
+    } catch (err) {
+        console.error('Failed to copy:', err);
+        alert('Failed to copy URL to clipboard.');
     }
 }
 

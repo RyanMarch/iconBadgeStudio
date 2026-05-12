@@ -70,17 +70,22 @@ body {
     width: 100%;
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    align-items: flex-start;
 }
 
 .header-actions {
     display: flex;
     gap: 0.5rem;
+    align-items: flex-start;
+}
+
+.base-bg-control {
+    margin: 0.5rem 0.2rem 0 0;
 }
 
 h1 {
     font-family: 'Outfit', sans-serif;
-    font-size: 1.5rem;
+    font-size: 2.3rem;
     background: linear-gradient(to right, #60a5fa, #a78bfa);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
@@ -130,6 +135,22 @@ h1 {
 }
 
 /* The actual icon layout */
+.base-bg {
+    position: absolute;
+    width: 78%;
+    height: 78%;
+    aspect-ratio: 1/1;
+    background: linear-gradient(135deg, #4603e3, #1b0573);
+    transition: all 0.3s ease, background 0.3s ease;
+    overflow: hidden;
+    z-index: 1;
+}
+
+.base-bg.circle { border-radius: 50%; }
+.base-bg.roundrect { border-radius: 12%; }
+.base-bg.squircle { border-radius: 22%; }
+.base-bg.square { border-radius: 0; }
+
 .base-icon {
     position: absolute;
     width: 78%;
@@ -137,8 +158,10 @@ h1 {
     object-fit: cover;
     aspect-ratio: 1/1;
     filter: drop-shadow(0 10px 15px rgba(0,0,0,0.3));
-    transition: all 0.3s ease;
+    transition: all 0.3s ease, filter 0.3s ease;
     overflow: hidden;
+    z-index: 2;
+    background: transparent !important;
 }
 
 .base-icon.circle { border-radius: 50%; }
@@ -155,6 +178,7 @@ h1 {
     justify-content: center;
     filter: drop-shadow(0 12px 20px rgba(0,0,0,0.4));
     transition: all 0.3s ease;
+    z-index: 10;
 }
 
 /* Badge Position Variants */
@@ -163,11 +187,11 @@ h1 {
 .badge-container.pos-bottom-left { bottom: 8%; left: 8%; }
 .badge-container.pos-bottom-right { bottom: 8%; right: 8%; }
 
-/* Base Icon Compensation - opposite corner of badge */
-.icon-canvas.pos-top-left .base-icon { bottom: 4%; right: 4%; }
-.icon-canvas.pos-top-right .base-icon { bottom: 4%; left: 4%; }
-.icon-canvas.pos-bottom-left .base-icon { top: 4%; right: 4%; }
-.icon-canvas.pos-bottom-right .base-icon { top: 4%; left: 4%; }
+/* Base Image Compensation - opposite corner of badge */
+.icon-canvas.pos-top-left .base-icon, .icon-canvas.pos-top-left .base-bg { bottom: 4%; right: 4%; }
+.icon-canvas.pos-top-right .base-icon, .icon-canvas.pos-top-right .base-bg { bottom: 4%; left: 4%; }
+.icon-canvas.pos-bottom-left .base-icon, .icon-canvas.pos-bottom-left .base-bg { top: 4%; right: 4%; }
+.icon-canvas.pos-bottom-right .base-icon, .icon-canvas.pos-bottom-right .base-bg { top: 4%; left: 4%; }
 
 .badge-shape {
     position: absolute;
@@ -272,7 +296,49 @@ label {
     display: block;
 }
 
-input[type="text"], select {
+.label-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.25rem;
+}
+
+.label-row label {
+    margin-bottom: 0;
+}
+
+.base-color-picker {
+    position: relative;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    border: 1.5px solid var(--glass-border);
+    cursor: pointer;
+    background: #ffffff;
+    transition: all 0.2s;
+    overflow: hidden;
+    box-shadow: 0 0 0 1px rgba(0,0,0,0.1);
+}
+
+.base-color-picker:hover {
+    transform: scale(1.1);
+    border-color: rgba(255,255,255,0.4);
+}
+
+.base-color-picker input[type="color"] {
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    opacity: 0;
+    cursor: pointer;
+}
+
+input[type="text"], 
+input[type="number"],
+select {
+    width: 100%;
     background: rgba(15, 23, 42, 0.5);
     border: 1px solid var(--glass-border);
     border-radius: 8px;
@@ -502,6 +568,12 @@ button.secondary:hover {
     background: rgba(255, 255, 255, 0.05);
 }
 
+button.secondary.success {
+    border-color: #22c55e;
+    color: #22c55e;
+    background: rgba(34, 197, 94, 0.05);
+}
+
 button.danger {
     background: rgba(239, 68, 68, 0.1);
     border: 1px solid rgba(239, 68, 68, 0.2);
@@ -688,7 +760,78 @@ button.danger:hover {
 .icon-suggestions {
     font-size: 0.7rem;
     color: var(--text-muted);
-    margin-top: 0.25rem;
+    margin-top: 0.35rem;
+    line-height: 1.4;
+}
+
+.suggestion-tag {
+    cursor: pointer;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    transition: color 0.2s;
+    color: var(--text-muted);
+}
+
+.suggestion-tag:hover {
+    color: var(--text-main);
+}
+
+.icon-picker-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+.icon-dropdown {
+    position: absolute;
+    top: calc(100% + 5px);
+    left: 0;
+    right: 0;
+    background: rgba(30, 41, 59, 0.95);
+    backdrop-filter: blur(16px);
+    border: 1px solid var(--glass-border);
+    border-radius: 10px;
+    max-height: 240px;
+    overflow-y: auto;
+    z-index: 100;
+    display: none;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+    padding: 0.5rem;
+}
+
+.icon-dropdown.active {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(40px, 1fr));
+    gap: 4px;
+}
+
+.dropdown-item {
+    aspect-ratio: 1/1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: var(--text-muted);
+}
+
+.dropdown-item:hover, .dropdown-item.selected {
+    background: rgba(59, 130, 246, 0.2);
+    color: white;
+}
+
+.dropdown-item svg {
+    width: 20px;
+    height: 20px;
+}
+
+.icon-dropdown::-webkit-scrollbar {
+    width: 4px;
+}
+
+.icon-dropdown::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
 }
 
 .range-control {
