@@ -8,93 +8,67 @@ const colors = [
     '#f59e0b', // Amber
 ];
 
-const state = {
-    shape: 'circle',
-    color: '#3b82f6',
-    icon: 'users',
-    baseSize: 80,
-    badgeSize: 40,
-    innerScale: 70,
-    rotation: 0,
-    badgePosition: 'bottom-right',
-    showShadows: true,
-    baseShape: 'squircle',
-    baseColor: '#4603e3',
-    baseColor2: '#1b0573',
-    gradientType: 'linear',
-    gradientAngle: 135,
-    baseText: 'YOUR TEXT',
-    baseTextColor: '#ffffff',
-    baseFrame: 'none',
-    baseNoise: false,
-    baseGlow: false,
-    baseVignette: false,
-    customBaseIcon: localStorage.getItem('iconStudio_baseIcon') || null
+const APP_CONFIG = {
+    shape: { url: 'shape', default: 'circle', type: 'string' },
+    color: { url: 'color', default: '#3b82f6', type: 'color' },
+    icon: { url: 'icon', default: 'users', type: 'string' },
+    baseSize: { url: 'bsize', default: 80, type: 'int' },
+    badgeSize: { url: 'size', default: 40, type: 'int' },
+    innerScale: { url: 'scale', default: 70, type: 'int' },
+    rotation: { url: 'rot', default: 0, type: 'int' },
+    badgePosition: { url: 'pos', default: 'bottom-right', type: 'string' },
+    showShadows: { url: 'shadows', default: true, type: 'bool' },
+    baseShape: { url: 'bshape', default: 'squircle', type: 'string' },
+    baseColor: { url: 'bcolor', default: '#3b82f6', type: 'color' },
+    baseColor2: { url: 'bcolor2', default: '#1D0945', type: 'color' },
+    gradientType: { url: 'gt', default: 'linear', type: 'string' },
+    gradientAngle: { url: 'ga', default: 135, type: 'int' },
+    baseText: { url: 'bt', default: 'YOUR TEXT', type: 'string' },
+    baseTextColor: { url: 'btc', default: '#ffffff', type: 'color' },
+    baseFrame: { url: 'bf', default: 'none', type: 'string' },
+    baseNoise: { url: 'bn', default: false, type: 'bool' },
+    baseGlow: { url: 'bglow', default: false, type: 'bool' },
+    baseVignette: { url: 'bv', default: false, type: 'bool' },
+    baseDeepFried: { url: 'bdf', default: false, type: 'bool' },
+    baseCRT: { url: 'bcrt', default: false, type: 'bool' },
+    baseMono: { url: 'bm', default: false, type: 'bool' },
+    baseZoom: { url: 'bz', default: 100, type: 'int' },
 };
+
+// Initialize state from config defaults
+const state = Object.keys(APP_CONFIG).reduce((acc, key) => {
+    acc[key] = APP_CONFIG[key].default;
+    return acc;
+}, {
+    customBaseIcon: localStorage.getItem('iconStudio_baseIcon') || null
+});
 
 function syncStateToURL() {
     const url = new URL(window.location);
     const params = new URLSearchParams(url.search);
 
-    const defaults = {
-        shape: 'circle',
-        color: '#3b82f6',
-        icon: 'users',
-        baseSize: 80,
-        badgeSize: 40,
-        innerScale: 70,
-        rotation: 0,
-        badgePosition: 'bottom-right',
-        showShadows: true,
-        baseShape: 'squircle',
-        baseColor: '#4603e3',
-        baseColor2: '#1b0573',
-        gradientType: 'linear',
-        gradientAngle: 135,
-        bt: 'YOUR TEXT',
-        btc: '#ffffff',
-        bf: 'none',
-        bn: false,
-        bglow: false,
-        bv: false
-    };
-
-    const setOrDelete = (key, val, def) => {
+    const setOrDelete = (urlKey, val, def) => {
         let displayVal = val;
         let compareDef = def;
         
-        if (key === 'color' || key === 'bcolor') {
+        // Handle color hex stripping for cleaner URLs
+        if (urlKey === 'color' || urlKey === 'bcolor' || urlKey === 'bcolor2' || urlKey === 'btc') {
             if (typeof val === 'string' && val.startsWith('#')) displayVal = val.slice(1);
             if (typeof def === 'string' && def.startsWith('#')) compareDef = def.slice(1);
         }
 
         if (displayVal !== undefined && displayVal !== null && String(displayVal) !== String(compareDef)) {
-            params.set(key, displayVal);
+            params.set(urlKey, displayVal);
         } else {
-            params.delete(key);
+            params.delete(urlKey);
         }
     };
 
-    setOrDelete('icon', state.icon, defaults.icon);
-    setOrDelete('shape', state.shape, defaults.shape);
-    setOrDelete('bshape', state.baseShape, defaults.baseShape);
-    setOrDelete('pos', state.badgePosition, defaults.badgePosition);
-    setOrDelete('color', state.color, defaults.color);
-    setOrDelete('size', state.badgeSize, defaults.badgeSize);
-    setOrDelete('rot', state.rotation, defaults.rotation);
-    setOrDelete('scale', state.innerScale, defaults.innerScale);
-    setOrDelete('bsize', state.baseSize, defaults.baseSize);
-    setOrDelete('bcolor', state.baseColor, defaults.baseColor);
-    setOrDelete('bcolor2', state.baseColor2, defaults.baseColor2);
-    setOrDelete('gt', state.gradientType, defaults.gradientType);
-    setOrDelete('ga', state.gradientAngle, defaults.gradientAngle);
-    setOrDelete('shadows', state.showShadows, defaults.showShadows);
-    setOrDelete('bt', state.baseText, defaults.bt);
-    setOrDelete('btc', state.baseTextColor, defaults.btc);
-    setOrDelete('bf', state.baseFrame, defaults.bf);
-    setOrDelete('bn', state.baseNoise, defaults.bn);
-    setOrDelete('bglow', state.baseGlow, defaults.bglow);
-    setOrDelete('bv', state.baseVignette, defaults.bv);
+    // Sync all standard config properties
+    Object.keys(APP_CONFIG).forEach(key => {
+        const config = APP_CONFIG[key];
+        setOrDelete(config.url, state[key], config.default);
+    });
 
     if (document.body.classList.contains('screenshot-mode')) {
         params.set('mode', 'screenshot');
@@ -130,38 +104,22 @@ function syncStateToURL() {
 function loadStateFromURL() {
     const params = new URLSearchParams(window.location.search);
     
-    if (params.has('icon')) state.icon = params.get('icon');
-    if (params.has('shape')) state.shape = params.get('shape');
-    if (params.has('bshape')) state.baseShape = params.get('bshape');
-    if (params.has('pos')) state.badgePosition = params.get('pos');
-    if (params.has('color')) {
-        const c = params.get('color');
-        state.color = c.startsWith('#') ? c : '#' + c;
-    }
-    if (params.has('size')) state.badgeSize = parseInt(params.get('size'));
-    if (params.has('rot')) state.rotation = parseInt(params.get('rot'));
-    if (params.has('scale')) state.innerScale = parseInt(params.get('scale'));
-    if (params.has('bsize')) state.baseSize = parseInt(params.get('bsize'));
-    if (params.has('bcolor')) {
-        const bc = params.get('bcolor');
-        state.baseColor = bc.startsWith('#') ? bc : '#' + bc;
-    }
-    if (params.has('bcolor2')) {
-        const bc2 = params.get('bcolor2');
-        state.baseColor2 = bc2.startsWith('#') ? bc2 : '#' + bc2;
-    }
-    if (params.has('gt')) state.gradientType = params.get('gt');
-    if (params.has('ga')) state.gradientAngle = parseInt(params.get('ga'));
-    if (params.has('shadows')) state.showShadows = params.get('shadows') === 'true';
-    if (params.has('bt')) state.baseText = params.get('bt');
-    if (params.has('btc')) {
-        const btc = params.get('btc');
-        state.baseTextColor = btc.startsWith('#') ? btc : '#' + btc;
-    }
-    if (params.has('bf')) state.baseFrame = params.get('bf');
-    if (params.has('bn')) state.baseNoise = params.get('bn') === 'true';
-    if (params.has('bglow')) state.baseGlow = params.get('bglow') === 'true';
-    if (params.has('bv')) state.baseVignette = params.get('bv') === 'true';
+    Object.keys(APP_CONFIG).forEach(key => {
+        const config = APP_CONFIG[key];
+        if (params.has(config.url)) {
+            const val = params.get(config.url);
+            if (config.type === 'int') {
+                state[key] = parseInt(val);
+            } else if (config.type === 'bool') {
+                state[key] = val === 'true';
+            } else if (config.type === 'color') {
+                state[key] = val.startsWith('#') ? val : '#' + val;
+            } else {
+                state[key] = val;
+            }
+        }
+    });
+
     if (params.has('img')) {
         let val = params.get('img');
         if (val.startsWith('cld:')) {
@@ -206,12 +164,14 @@ function init() {
     setBaseText(state.baseText);
     setBaseTextColor(state.baseTextColor);
     setBaseFrame(state.baseFrame);
+    setBaseImageZoom(state.baseZoom);
     applyBaseEffects();
 
     if (state.customBaseIcon) {
         document.getElementById('base-img').src = state.customBaseIcon;
         document.getElementById('remove-base-icon').style.display = 'flex';
     }
+    updateBaseControls();
 
     fetchIconList();
     lucide.createIcons();
@@ -247,8 +207,6 @@ function updateAppScale() {
     const isMobile = window.innerWidth <= 1150;
     
     if (isMobile) {
-        // On mobile, if the screen is narrower than our breakpoint, scale slightly to fit
-        // but we keep it closer to 1.0 since we've fixed the text sizes in CSS
         if (window.innerWidth < 450) {
             const scale = (window.innerWidth - 20) / 420; 
             document.documentElement.style.setProperty('--app-scale', Math.max(0.85, Math.min(1, scale)));
@@ -258,14 +216,12 @@ function updateAppScale() {
         return;
     }
 
-    // Desktop scaling: prioritize width so opening the dev console doesn't shrink the app
-    const targetWidth = 1350; 
-    
+    // Full-screen desktop scaling: focuses on content density with 600px canvas
+    const targetWidth = 1500; 
     let scale = window.innerWidth / targetWidth;
     
-    // Clamp scale: don't go below 0.9 on desktop for a premium feel, and cap at 1.3
-    // This ensures the app stays large and usable, only scaling down for narrow windows
-    scale = Math.min(Math.max(scale, 0.9), 1.3);
+    // Clamp scale: keep UI comfortable and readable
+    scale = Math.min(Math.max(scale, 0.8), 1.15);
     
     document.documentElement.style.setProperty('--app-scale', scale);
 }
@@ -404,6 +360,29 @@ function updateRemoveButtonVisibility() {
     }
 }
 
+function updateBaseControls() {
+    const hasImage = !!state.customBaseIcon;
+    const gradControls = document.getElementById('base-gradient-controls');
+    const imageControls = document.getElementById('base-image-controls');
+    
+    if (gradControls) gradControls.style.display = hasImage ? 'none' : 'block';
+    if (imageControls) imageControls.style.display = hasImage ? 'block' : 'none';
+}
+
+function setBaseImageZoom(v) {
+    state.baseZoom = v;
+    const valEl = document.getElementById('base-zoom-val');
+    const input = document.getElementById('base-zoom-input');
+    const img = document.getElementById('base-img');
+    
+    if (valEl) valEl.innerText = v;
+    if (input) input.value = v;
+    if (img) {
+        img.style.transform = `scale(${v / 100})`;
+    }
+    syncStateToURL();
+}
+
 function setShape(s) {
     state.shape = s;
     const shapeEl = document.getElementById('badge-shape');
@@ -422,15 +401,20 @@ function setShape(s) {
 
 function setBaseShape(s) {
     state.baseShape = s;
-    const img = document.getElementById('base-img');
-    const bg = document.getElementById('base-bg');
-    const frame = document.getElementById('base-frame');
-    img.className = 'base-icon ' + s;
-    if (bg) bg.className = 'base-bg ' + s;
-    if (frame) {
-        // We keep the frame type and add the shape for border radius
-        frame.className = `base-frame ${state.baseFrame} ${s}`;
-    }
+    const shapes = ['square', 'squircle', 'roundrect', 'circle'];
+    const elements = [
+        document.getElementById('base-img'),
+        document.getElementById('base-bg'),
+        document.getElementById('base-frame'),
+        document.getElementById('base-effects'),
+        document.getElementById('base-overlay')
+    ];
+
+    elements.forEach(el => {
+        if (!el) return;
+        shapes.forEach(sh => el.classList.remove(sh));
+        el.classList.add(s);
+    });
     
     document.querySelectorAll('[data-base-shape]').forEach(btn => {
         btn.classList.toggle('active', btn.dataset.baseShape === s);
@@ -468,28 +452,41 @@ function toggleBaseEffect(eff) {
     if (eff === 'noise') state.baseNoise = !state.baseNoise;
     if (eff === 'glow') state.baseGlow = !state.baseGlow;
     if (eff === 'vignette') state.baseVignette = !state.baseVignette;
+    if (eff === 'deep-fried') state.baseDeepFried = !state.baseDeepFried;
+    if (eff === 'crt') state.baseCRT = !state.baseCRT;
+    if (eff === 'mono') state.baseMono = !state.baseMono;
     
     applyBaseEffects();
     syncStateToURL();
 }
 
 function applyBaseEffects() {
-    const bg = document.getElementById('base-bg');
+    const base = document.getElementById('base-bg');
+    const effects = document.getElementById('base-effects');
     const overlay = document.getElementById('base-overlay');
     
-    if (bg) {
-        bg.classList.toggle('effect-glow', state.baseGlow);
-        bg.classList.toggle('effect-vignette', state.baseVignette);
+    if (effects) {
+        effects.classList.toggle('effect-glow', state.baseGlow);
+        effects.classList.toggle('effect-vignette', state.baseVignette);
+        effects.classList.toggle('effect-crt', state.baseCRT);
     }
     
     if (overlay) {
         overlay.classList.toggle('noise', state.baseNoise);
+    }
+
+    if (base) {
+        base.classList.toggle('effect-deep-fried', state.baseDeepFried);
+        base.classList.toggle('effect-monochrome', state.baseMono);
     }
     
     // Update button active states
     document.getElementById('effect-noise').classList.toggle('active', state.baseNoise);
     document.getElementById('effect-glow').classList.toggle('active', state.baseGlow);
     document.getElementById('effect-vignette').classList.toggle('active', state.baseVignette);
+    document.getElementById('effect-deep-fried').classList.toggle('active', state.baseDeepFried);
+    document.getElementById('effect-crt').classList.toggle('active', state.baseCRT);
+    document.getElementById('effect-mono').classList.toggle('active', state.baseMono);
 }
 
 function setBaseColor1(c) {
@@ -576,45 +573,49 @@ function updateBasePreview() {
     const hasText = state.baseText && state.baseText.trim() !== '';
     const isDefaultText = state.baseText === 'YOUR TEXT';
     
-    // We show the text element if there is non-default text OR if there's no custom icon
-    if ((hasText && !isDefaultText) || !hasCustomIcon) {
+    if (hasCustomIcon) {
+        imgEl.style.display = 'block';
+        if (imgEl.src !== state.customBaseIcon) {
+            imgEl.src = state.customBaseIcon;
+        }
+    } else {
         imgEl.style.display = 'none';
+    }
+
+    if (hasText && !(hasCustomIcon && isDefaultText)) {
         textEl.style.display = 'flex';
         
-        const textToShow = hasText ? state.baseText : "YOUR TEXT";
+        const textToShow = state.baseText;
         textEl.innerText = textToShow;
         textEl.style.color = state.baseTextColor;
         
-        // Font size scaling: more aggressive and refined
+        // Font size scaling: Now using Container-relative units (cqw) for perfect fluid scaling
         const textLength = textToShow.length;
         const words = textToShow.split(/\s+/);
         const longestWordLength = Math.max(...words.map(w => w.length));
         
-        // Base container size is roughly 400px (at 80% baseSize)
-        const isMobile = window.innerWidth < 1150;
-        const containerWidth = isMobile ? 260 : 320; 
-        const charFactor = isMobile ? 0.85 : 0.72; // Tighter for mobile Outfit font, looser for desktop
+        // charFactor determines how "tightly" we fit the characters.
+        const charFactor = 0.8; 
         
-        let fontSize = Math.min(260, containerWidth / (longestWordLength * charFactor));
-        const maxTotalFontSize = (containerWidth * 3.5) / (textLength * charFactor);
+        // Calculate font size as a percentage of the container width (cqw)
+        // A font-size of 25cqw is roughly equivalent to the old 80px on a 320px canvas
+        let fontSize = Math.min(25, 25 / (longestWordLength * charFactor / 4));
+        const maxTotalFontSize = (25 * 3.5) / (textLength * charFactor / 4);
         fontSize = Math.min(fontSize, maxTotalFontSize);
         
+        // Scale by the user's baseSize setting
         fontSize = fontSize * (state.baseSize / 80);
-        if (isMobile) fontSize *= 0.75; // Only apply extra mobile reduction on small screens
-        if (fontSize < 16) fontSize = 16;
         
-        textEl.style.fontSize = fontSize + 'px';
+        // Minimum legible size in container units
+        if (fontSize < 4) fontSize = 4;
+        
+        textEl.style.fontSize = fontSize + 'cqw';
         textEl.style.lineHeight = '0.95';
         
         const shadow = state.showShadows ? '0 10px 15px rgba(0,0,0,0.3)' : 'none';
         textEl.style.textShadow = shadow;
     } else {
-        // Show the uploaded custom icon
-        imgEl.style.display = 'block';
         textEl.style.display = 'none';
-        if (imgEl.src !== state.customBaseIcon) {
-            imgEl.src = state.customBaseIcon;
-        }
     }
 }
 
@@ -701,14 +702,13 @@ async function handleBaseIconUpload(event) {
     }
     URL.revokeObjectURL(objectUrl);
 
-    const imgEl = document.getElementById('base-img');
-    const originalOpacity = imgEl.style.opacity || '1';
-    imgEl.style.opacity = '0.4';
+    const overlay = document.getElementById('loading-overlay');
+    if (overlay) overlay.classList.add('visible');
 
     const formData = new FormData();
     formData.append('file', file);
-    formData.append('upload_preset', 'iconBadgeStudio');
-    formData.append('folder', 'User Uploads - Icon Badge Studio');
+    formData.append('upload_preset', 'iconStudio');
+    formData.append('folder', 'User Uploads - Icon Studio');
 
     try {
         const response = await fetch('https://api.cloudinary.com/v1_1/rm20abcd26/image/upload', {
@@ -722,6 +722,7 @@ async function handleBaseIconUpload(event) {
         const imageUrl = data.secure_url;
 
         state.customBaseIcon = imageUrl;
+        const imgEl = document.getElementById('base-img');
         imgEl.src = imageUrl;
         localStorage.setItem('iconStudio_baseIcon', imageUrl);
     } catch (err) {
@@ -734,15 +735,16 @@ async function handleBaseIconUpload(event) {
             reader.onload = (e) => {
                 const dataUrl = e.target.result;
                 state.customBaseIcon = dataUrl;
-                imgEl.src = dataUrl;
+                document.getElementById('base-img').src = dataUrl;
                 localStorage.setItem('iconStudio_baseIcon', dataUrl);
                 resolve();
             };
             reader.readAsDataURL(file);
         });
     } finally {
-        imgEl.style.opacity = originalOpacity;
+        if (overlay) overlay.classList.remove('visible');
         updateRemoveButtonVisibility();
+        updateBaseControls();
         updateBasePreview();
         syncStateToURL();
     }
@@ -751,9 +753,12 @@ async function handleBaseIconUpload(event) {
 function resetBaseIcon() {
     state.customBaseIcon = null;
     localStorage.removeItem('iconStudio_baseIcon');
-    document.getElementById('base-icon-upload').value = '';
-    setBaseColor1('#1b0573');
+    const uploadInput = document.getElementById('base-icon-upload');
+    if (uploadInput) uploadInput.value = '';
+    
+    setBaseColor1('#5E007F');
     updateRemoveButtonVisibility();
+    updateBaseControls();
     updateBasePreview();
     syncStateToURL();
 }
@@ -840,19 +845,17 @@ function setIcon(name, shouldHideDropdown = true) {
         
         const span = target.querySelector('span');
         // Dynamic font size calculation using the innerScale state
-        let fontSize = 120;
+        // The badge is roughly 25-40% of the canvas width
+        let fontSize = 12; // Base size in cqw
         
         if (name.length > 1) {
-            // We adjust the area constant based on the user's innerScale slider
-            // 40000 is a good baseline for 100% scale
-            const areaBase = (state.innerScale / 100) * 45000;
-            fontSize = Math.min(120, Math.sqrt(areaBase / (name.length * 0.6)));
-            
-            if (fontSize < 14) fontSize = 14;
+            const areaBase = (state.innerScale / 100) * 150; 
+            fontSize = Math.min(12, Math.sqrt(areaBase / (name.length * 0.8)));
+            if (fontSize < 2) fontSize = 2;
         }
         
-        span.style.fontSize = fontSize + 'px';
-        span.style.whiteSpace = 'normal'; // Allow wrapping
+        span.style.fontSize = fontSize + 'cqw';
+        span.style.whiteSpace = 'normal';
         span.style.wordBreak = name.includes(' ') ? 'normal' : 'break-all';
     }
     
@@ -864,12 +867,7 @@ function setBaseSize(v) {
     document.getElementById('base-size-val').innerText = v;
     const input = document.getElementById('base-size-input');
     if (input) input.value = v;
-    const img = document.getElementById('base-img');
     const bg = document.getElementById('base-bg');
-    if (img) {
-        img.style.width = v + '%';
-        img.style.height = v + '%';
-    }
     if (bg) {
         bg.style.width = v + '%';
         bg.style.height = v + '%';
@@ -931,36 +929,43 @@ function toggleShadows(v) {
 }
 
 function resetDefaults() {
-    setShape('circle');
-    setColor('#3b82f6');
-    setIcon('users');
-    setBaseSize(80);
-    setBadgeSize(40);
-    setInnerScale(70);
-    setBadgeRotation(0);
-    setBadgePosition('bottom-right');
-    toggleShadows(true);
-    setBaseShape('squircle');
-    setBaseColor1('#4603e3');
-    setBaseColor2('#1b0573');
-    setBaseGradientType('linear');
-    setBaseGradientAngle(135);
-    setBaseText('YOUR TEXT');
-    setBaseTextColor('#ffffff');
-    setBaseFrame('none');
-    state.baseNoise = false;
-    state.baseGlow = false;
-    state.baseVignette = false;
-    applyBaseEffects();
-    document.getElementById('shadow-toggle').checked = true;
-    
-    // Update range inputs
-    document.querySelectorAll('input[type="range"]').forEach(input => {
-        if (input.oninput.toString().includes('setBaseSize')) input.value = 80;
-        if (input.oninput.toString().includes('setBadgeSize')) input.value = 40;
-        if (input.oninput.toString().includes('setBadgeRotation')) input.value = 0;
-        if (input.oninput.toString().includes('setInnerScale')) input.value = 70;
+    // 1. Reset file input but preserve the current state.customBaseIcon
+    const uploadInput = document.getElementById('base-icon-upload');
+    if (uploadInput) uploadInput.value = '';
+
+    // 2. Restore all state values from APP_CONFIG
+    Object.keys(APP_CONFIG).forEach(key => {
+        state[key] = APP_CONFIG[key].default;
     });
+
+    // 3. Update UI to match new state
+    setShape(state.shape);
+    setColor(state.color);
+    setIcon(state.icon);
+    setBaseSize(state.baseSize);
+    setBadgeSize(state.badgeSize);
+    setInnerScale(state.innerScale);
+    setBadgeRotation(state.rotation);
+    setBadgePosition(state.badgePosition);
+    toggleShadows(state.showShadows);
+    setBaseShape(state.baseShape);
+    setBaseColor1(state.baseColor);
+    setBaseColor2(state.baseColor2);
+    setBaseGradientType(state.gradientType);
+    setBaseGradientAngle(state.gradientAngle);
+    setBaseText(state.baseText);
+    setBaseTextColor(state.baseTextColor);
+    setBaseFrame(state.baseFrame);
+    setBaseImageZoom(state.baseZoom);
+    applyBaseEffects();
+    
+    // 4. Update UI visibility
+    updateRemoveButtonVisibility();
+    updateBaseControls();
+    updateBasePreview();
+    
+    // Sync final state to URL
+    syncStateToURL();
 }
 
 function toggleScreenshotMode() {
@@ -991,9 +996,10 @@ async function exportPNG() {
         // Tiny delay for screenshot mode styles to settle
         await new Promise(r => setTimeout(r, 200));
 
-        const dataUrl = await domtoimage.toPng(captureArea, {
-            width: 512,
-            height: 512,
+        // First capture to "prime" the browser
+        await domtoimage.toPng(captureArea, {
+            width: 1024,
+            height: 1024,
             cacheBust: true,
             style: {
                 transform: 'scale(1)',
@@ -1004,11 +1010,10 @@ async function exportPNG() {
             }
         });
 
-        // Sometimes the first capture misses images on some browsers
-        // A second capture usually works if the first "primed" it
+        // Second capture for the actual file
         const finalUrl = await domtoimage.toPng(captureArea, {
-            width: 512,
-            height: 512,
+            width: 1024,
+            height: 1024,
             cacheBust: true
         });
 

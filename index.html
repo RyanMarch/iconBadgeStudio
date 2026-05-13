@@ -15,15 +15,15 @@
     </script>
     <meta name="google" content="notranslate">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Icon Badge Studio | Professional Icon & Badge Maker</title>
+    <title>Icon Studio | Edit, Generate, & Customize Icons</title>
     <meta name="description" content="Create premium icons with customizable badges, rich gradients, and skeuomorphic effects. Export high-quality PNGs and share designs via URL.">
     
     <!-- Open Graph -->
     <meta property="og:type" content="website">
-    <meta property="og:url" content="https://iconbadgestudio.ryanmarch.me/">
-    <meta property="og:title" content="Icon Badge Studio | Professional Icon & Badge Maker">
+    <meta property="og:url" content="https://iconstudio.ryanmarch.me/">
+    <meta property="og:title" content="Icon Studio | Edit, Generate, & Customize Icons">
     <meta property="og:description" content="Create premium icons with customizable badges, rich gradients, and skeuomorphic effects.">
-    <meta property="og:image" content="https://iconbadgestudio.ryanmarch.me/assets/favicon/web-app-manifest-512x512.png">
+    <meta property="og:image" content="https://iconstudio.ryanmarch.me/assets/favicon/web-app-manifest-512x512.png">
     
     <!-- Fonts & Icons -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -66,7 +66,7 @@
         <!-- Preview -->
         <div class="preview-section">
             <div class="preview-header">
-                <h1>Icon Badge Studio</h1>
+                <h1>Icon Studio</h1>
                 <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme">
                     <svg class="sun-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
                     <svg class="moon-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
@@ -78,17 +78,22 @@
             <div class="icon-canvas-wrapper" id="capture-area">
                 <div class="icon-canvas pos-bottom-right" id="icon-canvas">
                     <div class="base-bg squircle" id="base-bg">
+                        <img src="assets/img/base-placeholder.svg" alt="Placeholder Icon" class="base-icon" id="base-img">
                         <div class="base-text" id="base-text">YOUR TEXT</div>
+                        <div class="base-effects" id="base-effects"></div>
                         <div class="base-overlay" id="base-overlay"></div>
                         <div class="base-frame" id="base-frame"></div>
                     </div>
-                    <img src="assets/img/base-placeholder.svg" alt="Placeholder Icon" class="base-icon" id="base-img">
                     <div class="badge-container pos-bottom-right" id="badge-wrap">
                         <div class="badge-shape circle" id="badge-shape"></div>
                         <div class="badge-icon" id="badge-icon-target">
                             <i data-lucide="users"></i>
                         </div>
                     </div>
+                </div>
+                <div id="loading-overlay" class="loading-overlay">
+                    <div class="spinner"></div>
+                    <span id="loading-text">Uploading Image...</span>
                 </div>
             </div>
 
@@ -138,36 +143,48 @@
                             <input type="range" id="base-size-input" min="50" max="100" value="80" oninput="setBaseSize(this.value)">
                         </div>
 
-                        <div class="compact-row">
-                            <div class="control-group">
-                                <label>Base Colors</label>
-                                <div class="color-presets">
-                                    <div class="custom-color-wrapper" title="Base Color 1" style="--swatch-color: #4603e3">
-                                        <input type="color" id="base-bg-color-1" value="#4603e3" oninput="setBaseColor1(this.value)">
+                        <div id="base-gradient-controls">
+                            <div class="compact-row">
+                                <div class="control-group" id="base-colors-group">
+                                    <label>Base Colors</label>
+                                    <div class="color-presets">
+                                        <div class="custom-color-wrapper" title="Base Color 1" style="--swatch-color: #3b82f6">
+                                            <input type="color" id="base-bg-color-1" value="#3b82f6" oninput="setBaseColor1(this.value)">
+                                        </div>
+                                        <div class="custom-color-wrapper" title="Base Color 2" style="--swatch-color: #1D0945">
+                                            <input type="color" id="base-bg-color-2" value="#1D0945" oninput="setBaseColor2(this.value)">
+                                        </div>
                                     </div>
-                                    <div class="custom-color-wrapper" title="Base Color 2" style="--swatch-color: #1b0573">
-                                        <input type="color" id="base-bg-color-2" value="#1b0573" oninput="setBaseColor2(this.value)">
+                                </div>
+
+                                <div class="control-group" id="base-gradient-type-group">
+                                    <label>Gradient Type</label>
+                                    <div class="shape-grid-2x2">
+                                        <button class="shape-btn shape-btn-sm active" data-grad-type="linear" onclick="setBaseGradientType('linear')">Linear</button>
+                                        <button class="shape-btn shape-btn-sm" data-grad-type="radial" onclick="setBaseGradientType('radial')">Radial</button>
+                                        <button class="shape-btn shape-btn-sm" data-grad-type="conic" onclick="setBaseGradientType('conic')">Conic</button>
+                                        <button class="shape-btn shape-btn-sm" data-grad-type="mesh" onclick="setBaseGradientType('mesh')">Mesh</button>
                                     </div>
                                 </div>
                             </div>
 
-                            <div class="control-group">
-                                <label>Gradient Type</label>
-                                <div class="shape-grid-2x2">
-                                    <button class="shape-btn shape-btn-sm active" data-grad-type="linear" onclick="setBaseGradientType('linear')">Linear</button>
-                                    <button class="shape-btn shape-btn-sm" data-grad-type="radial" onclick="setBaseGradientType('radial')">Radial</button>
-                                    <button class="shape-btn shape-btn-sm" data-grad-type="conic" onclick="setBaseGradientType('conic')">Conic</button>
-                                    <button class="shape-btn shape-btn-sm" data-grad-type="mesh" onclick="setBaseGradientType('mesh')">Mesh</button>
+                            <div class="control-group" id="base-angle-group">
+                                <div class="range-header">
+                                    <label>Gradient Angle</label>
+                                    <span class="range-val"><span id="base-angle-val">90</span>°</span>
                                 </div>
+                                <input type="range" id="base-angle-input" min="0" max="360" value="90" oninput="setBaseGradientAngle(this.value)">
                             </div>
                         </div>
 
-                        <div class="control-group" id="base-angle-group">
-                            <div class="range-header">
-                                <label>Gradient Angle</label>
-                                <span class="range-val"><span id="base-angle-val">135</span>°</span>
+                        <div id="base-image-controls" style="display: none;">
+                            <div class="control-group">
+                                <div class="range-header">
+                                    <label>Image Zoom</label>
+                                    <span class="range-val"><span id="base-zoom-val">100</span>%</span>
+                                </div>
+                                <input type="range" id="base-zoom-input" min="100" max="300" value="100" oninput="setBaseImageZoom(this.value)">
                             </div>
-                            <input type="range" id="base-angle-input" min="0" max="360" value="135" oninput="setBaseGradientAngle(this.value)">
                         </div>
 
                         <div class="control-group">
@@ -176,7 +193,7 @@
                                 <label style="margin-bottom: 0;">Color</label>
                             </div>
                             <div class="text-color-row" style="align-items: center;">
-                                <div style="position: relative; flex: 1;">
+                                <div class="text-input-wrapper" style="position: relative; flex: 1;">
                                     <input type="text" id="base-text-input" placeholder="e.g. AB, 🚀, YOUR TEXT" oninput="setBaseText(this.value)" maxlength="30" style="width: 100%; padding-right: 3rem;">
                                     <span class="char-count" id="base-text-count" style="position: absolute; right: 0.75rem; top: 50%; transform: translateY(-50%); font-size: 0.7rem; opacity: 0.5; pointer-events: none;">0/30</span>
                                 </div>
@@ -189,9 +206,9 @@
                         <div class="control-group">
                             <label>Base Shape</label>
                             <div class="shape-grid-2x2">
-                                <button class="shape-btn shape-btn-sm" data-base-shape="square" onclick="setBaseShape('square')">Square</button>
                                 <button class="shape-btn shape-btn-sm active" data-base-shape="squircle" onclick="setBaseShape('squircle')">Squircle</button>
-                                <button class="shape-btn shape-btn-sm" data-base-shape="roundrect" onclick="setBaseShape('roundrect')">Round</button>
+                                <button class="shape-btn shape-btn-sm" data-base-shape="square" onclick="setBaseShape('square')">Square</button>
+                                <button class="shape-btn shape-btn-sm" data-base-shape="roundrect" onclick="setBaseShape('roundrect')">RoundRect</button>
                                 <button class="shape-btn shape-btn-sm" data-base-shape="circle" onclick="setBaseShape('circle')">Circle</button>
                             </div>
                         </div>
@@ -210,10 +227,13 @@
 
                         <div class="control-group">
                             <label>Base Effects</label>
-                            <div class="shape-grid-2x2" style="grid-template-columns: repeat(3, 1fr);">
+                            <div class="shape-grid" style="grid-template-columns: repeat(3, 1fr);">
                                 <button class="shape-btn shape-btn-sm" id="effect-noise" onclick="toggleBaseEffect('noise')">Noise</button>
                                 <button class="shape-btn shape-btn-sm" id="effect-glow" onclick="toggleBaseEffect('glow')">Glow</button>
                                 <button class="shape-btn shape-btn-sm" id="effect-vignette" onclick="toggleBaseEffect('vignette')">Vignette</button>
+                                <button class="shape-btn shape-btn-sm" id="effect-deep-fried" onclick="toggleBaseEffect('deep-fried')">Deep Fried</button>
+                                <button class="shape-btn shape-btn-sm" id="effect-crt" onclick="toggleBaseEffect('crt')">CRT</button>
+                                <button class="shape-btn shape-btn-sm" id="effect-mono" onclick="toggleBaseEffect('mono')">Mono</button>
                             </div>
                         </div>
                     </div>
@@ -243,7 +263,7 @@
                     <button class="shape-btn shape-btn-sm active" data-shape="circle" onclick="setShape('circle')">Circle</button>
                     <button class="shape-btn shape-btn-sm" data-shape="roundrect" onclick="setShape('roundrect')">RoundRect</button>
                     <button class="shape-btn shape-btn-sm" data-shape="squircle" onclick="setShape('squircle')">Squircle</button>
-                    <button class="shape-btn shape-btn-sm" data-shape="square-hard" onclick="setShape('square-hard')">Hard Sq</button>
+                    <button class="shape-btn shape-btn-sm" data-shape="square-hard" onclick="setShape('square-hard')">Square</button>
                     <button class="shape-btn shape-btn-sm" data-shape="hexagon" onclick="setShape('hexagon')">Hex V</button>
                     <button class="shape-btn shape-btn-sm" data-shape="hexagon-h" onclick="setShape('hexagon-h')">Hex H</button>
                     <button class="shape-btn shape-btn-sm" data-shape="diamond" onclick="setShape('diamond')">Diamond</button>
@@ -269,9 +289,9 @@
                     <div id="icon-dropdown" class="icon-dropdown"></div>
                 </div>
                 <div class="icon-suggestions">
-                    Try: 
+                    Ex: 
                     <span class="suggestion-tag" onclick="setIcon('dumbbell')">dumbbell</span>, 
-                    <span class="suggestion-tag" onclick="setIcon('users')">users</span>, 
+                    <span class="suggestion-tag" onclick="setIcon('users')">user</span>, 
                     <span class="suggestion-tag" onclick="setIcon('gauge')">gauge</span>, 
                     <span class="suggestion-tag" onclick="setIcon('mail')">mail</span>, 
                     <span class="suggestion-tag" onclick="setIcon('settings')">settings</span>, 
@@ -361,6 +381,8 @@
                 showThemeStatus(statusText);
             });
         }
+    </script>
+
     </script>
 </body>
 </html>
