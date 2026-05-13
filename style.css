@@ -29,7 +29,7 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center;
-    /* justify-content: center; Removed in favor of margin: auto on container */
+    align-items: center;
     padding: 2rem 1rem;
     overflow-x: hidden;
 }
@@ -163,10 +163,10 @@ h1 {
     min-height: 0;
 }
 
-.base-bg.circle { border-radius: 50%; }
-.base-bg.roundrect { border-radius: 12%; }
-.base-bg.squircle { border-radius: 22%; }
-.base-bg.square { border-radius: 0; }
+.circle { border-radius: 50%; }
+.roundrect { border-radius: 12%; }
+.squircle { border-radius: 22%; }
+.square { border-radius: 0; }
 
 .base-frame {
     position: absolute;
@@ -280,25 +280,10 @@ h1 {
         0 10px 20px rgba(0, 0, 0, 0.2);
 }
 
-.base-frame.emboss.circle { border-radius: 50%; }
-.base-frame.emboss.roundrect { border-radius: 12%; }
-.base-frame.emboss.squircle { border-radius: 22%; }
-.base-frame.emboss.square { border-radius: 0; }
-
 /* Ensure text is above the glass frame when in glass mode for sharpness */
 .base-bg.frame-glass .base-text {
     z-index: 10;
 }
-
-.base-frame.glass.circle { border-radius: 50%; }
-.base-frame.glass.roundrect { border-radius: 12%; }
-.base-frame.glass.squircle { border-radius: 22%; }
-.base-frame.glass.square { border-radius: 0; }
-
-.base-frame.border.circle { border-radius: 50%; }
-.base-frame.border.roundrect { border-radius: 12%; }
-.base-frame.border.squircle { border-radius: 22%; }
-.base-frame.border.square { border-radius: 0; }
 
 .base-icon {
     position: absolute;
@@ -313,10 +298,6 @@ h1 {
     background: transparent !important;
 }
 
-.base-icon.circle { border-radius: 50%; }
-.base-icon.roundrect { border-radius: 12%; }
-.base-icon.squircle { border-radius: 22%; }
-.base-icon.square { border-radius: 0; }
 
 .base-text {
     width: 100%;
@@ -672,7 +653,6 @@ input[type="text"]:focus {
     width: var(--swatch-size);
     height: var(--swatch-size);
     border-radius: 50%;
-    /* background: var(--swatch-color); */
     margin: 0 auto 0.2rem auto;
 }
 
@@ -705,7 +685,6 @@ input[type="text"]:focus {
 }
 
 .custom-color-wrapper.active {
-    /* box-shadow: 0 0 0 2px white, 0 0 10px rgba(255, 255, 255, 0.3); */
 }
 
 .custom-color-wrapper input[type="color"] {
@@ -819,6 +798,11 @@ button.danger {
     align-items: center;
     justify-content: center;
     gap: 0.5rem;
+}
+
+button i {
+    width: 16px;
+    height: 16px;
 }
 
 button.danger:hover {
