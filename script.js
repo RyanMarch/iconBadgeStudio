@@ -19,7 +19,16 @@ const state = {
     badgePosition: 'bottom-right',
     showShadows: true,
     baseShape: 'squircle',
-    baseColor: '#1b0573',
+    baseColor: '#4603e3',
+    baseColor2: '#1b0573',
+    gradientType: 'linear',
+    gradientAngle: 135,
+    baseText: 'YOUR TEXT',
+    baseTextColor: '#ffffff',
+    baseFrame: 'none',
+    baseNoise: false,
+    baseGlow: false,
+    baseVignette: false,
     customBaseIcon: localStorage.getItem('iconStudio_baseIcon') || null
 };
 
@@ -38,7 +47,16 @@ function syncStateToURL() {
         badgePosition: 'bottom-right',
         showShadows: true,
         baseShape: 'squircle',
-        baseColor: '#1b0573'
+        baseColor: '#4603e3',
+        baseColor2: '#1b0573',
+        gradientType: 'linear',
+        gradientAngle: 135,
+        bt: 'YOUR TEXT',
+        btc: '#ffffff',
+        bf: 'none',
+        bn: false,
+        bglow: false,
+        bv: false
     };
 
     const setOrDelete = (key, val, def) => {
@@ -67,7 +85,16 @@ function syncStateToURL() {
     setOrDelete('scale', state.innerScale, defaults.innerScale);
     setOrDelete('bsize', state.baseSize, defaults.baseSize);
     setOrDelete('bcolor', state.baseColor, defaults.baseColor);
+    setOrDelete('bcolor2', state.baseColor2, defaults.baseColor2);
+    setOrDelete('gt', state.gradientType, defaults.gradientType);
+    setOrDelete('ga', state.gradientAngle, defaults.gradientAngle);
     setOrDelete('shadows', state.showShadows, defaults.showShadows);
+    setOrDelete('bt', state.baseText, defaults.bt);
+    setOrDelete('btc', state.baseTextColor, defaults.btc);
+    setOrDelete('bf', state.baseFrame, defaults.bf);
+    setOrDelete('bn', state.baseNoise, defaults.bn);
+    setOrDelete('bglow', state.baseGlow, defaults.bglow);
+    setOrDelete('bv', state.baseVignette, defaults.bv);
 
     if (document.body.classList.contains('screenshot-mode')) {
         params.set('mode', 'screenshot');
@@ -119,7 +146,22 @@ function loadStateFromURL() {
         const bc = params.get('bcolor');
         state.baseColor = bc.startsWith('#') ? bc : '#' + bc;
     }
+    if (params.has('bcolor2')) {
+        const bc2 = params.get('bcolor2');
+        state.baseColor2 = bc2.startsWith('#') ? bc2 : '#' + bc2;
+    }
+    if (params.has('gt')) state.gradientType = params.get('gt');
+    if (params.has('ga')) state.gradientAngle = parseInt(params.get('ga'));
     if (params.has('shadows')) state.showShadows = params.get('shadows') === 'true';
+    if (params.has('bt')) state.baseText = params.get('bt');
+    if (params.has('btc')) {
+        const btc = params.get('btc');
+        state.baseTextColor = btc.startsWith('#') ? btc : '#' + btc;
+    }
+    if (params.has('bf')) state.baseFrame = params.get('bf');
+    if (params.has('bn')) state.baseNoise = params.get('bn') === 'true';
+    if (params.has('bglow')) state.baseGlow = params.get('bglow') === 'true';
+    if (params.has('bv')) state.baseVignette = params.get('bv') === 'true';
     if (params.has('img')) {
         let val = params.get('img');
         if (val.startsWith('cld:')) {
@@ -157,7 +199,14 @@ function init() {
     setBadgePosition(state.badgePosition);
     toggleShadows(state.showShadows);
     setBaseShape(state.baseShape);
-    setBaseColor(state.baseColor);
+    setBaseColor1(state.baseColor);
+    setBaseColor2(state.baseColor2);
+    setBaseGradientType(state.gradientType);
+    setBaseGradientAngle(state.gradientAngle);
+    setBaseText(state.baseText);
+    setBaseTextColor(state.baseTextColor);
+    setBaseFrame(state.baseFrame);
+    applyBaseEffects();
 
     if (state.customBaseIcon) {
         document.getElementById('base-img').src = state.customBaseIcon;
@@ -173,6 +222,19 @@ function init() {
     // Setup dynamic scaling
     window.addEventListener('resize', updateAppScale);
     updateAppScale();
+
+    // Subtle feedback for character limit
+    const baseTextInput = document.getElementById('base-text-input');
+    if (baseTextInput) {
+        baseTextInput.addEventListener('keydown', (e) => {
+            // If at limit and typing a normal character (length 1)
+            if (baseTextInput.value.length >= 30 && e.key.length === 1 && !e.ctrlKey && !e.metaKey) {
+                baseTextInput.classList.remove('shake');
+                void baseTextInput.offsetWidth; // Trigger reflow
+                baseTextInput.classList.add('shake');
+            }
+        });
+    }
 }
 
 function updateAppScale() {
@@ -182,30 +244,28 @@ function updateAppScale() {
         return;
     }
 
-    const isMobile = window.innerWidth <= 950;
+    const isMobile = window.innerWidth <= 1150;
     
     if (isMobile) {
-        // On mobile, if the screen is narrower than our mobile max-width (600px), scale down
-        if (window.innerWidth < 640) {
-            const scale = Math.min(1, (window.innerWidth - 32) / 400); // 32px for padding
-            document.documentElement.style.setProperty('--app-scale', Math.max(0.7, scale));
+        // On mobile, if the screen is narrower than our breakpoint, scale slightly to fit
+        // but we keep it closer to 1.0 since we've fixed the text sizes in CSS
+        if (window.innerWidth < 450) {
+            const scale = (window.innerWidth - 20) / 420; 
+            document.documentElement.style.setProperty('--app-scale', Math.max(0.85, Math.min(1, scale)));
         } else {
             document.documentElement.style.setProperty('--app-scale', '1');
         }
         return;
     }
 
-    // Desktop scaling
-    const targetWidth = 1050; 
-    const targetHeight = 850;
+    // Desktop scaling: prioritize width so opening the dev console doesn't shrink the app
+    const targetWidth = 1350; 
     
-    const scaleW = window.innerWidth / targetWidth;
-    const scaleH = (window.innerHeight - 40) / targetHeight; // 40px buffer
+    let scale = window.innerWidth / targetWidth;
     
-    let scale = Math.min(scaleW, scaleH);
-    
-    // Clamp scale: don't go below 0.8 on desktop, and cap at 1.4
-    scale = Math.min(Math.max(scale, 0.8), 1.4);
+    // Clamp scale: don't go below 0.9 on desktop for a premium feel, and cap at 1.3
+    // This ensures the app stays large and usable, only scaling down for narrow windows
+    scale = Math.min(Math.max(scale, 0.9), 1.3);
     
     document.documentElement.style.setProperty('--app-scale', scale);
 }
@@ -364,8 +424,13 @@ function setBaseShape(s) {
     state.baseShape = s;
     const img = document.getElementById('base-img');
     const bg = document.getElementById('base-bg');
+    const frame = document.getElementById('base-frame');
     img.className = 'base-icon ' + s;
     if (bg) bg.className = 'base-bg ' + s;
+    if (frame) {
+        // We keep the frame type and add the shape for border radius
+        frame.className = `base-frame ${state.baseFrame} ${s}`;
+    }
     
     document.querySelectorAll('[data-base-shape]').forEach(btn => {
         btn.classList.toggle('active', btn.dataset.baseShape === s);
@@ -373,29 +438,224 @@ function setBaseShape(s) {
     syncStateToURL();
 }
 
-function setBaseColor(c) {
-    state.baseColor = c;
+function setBaseFrame(f) {
+    state.baseFrame = f;
+    const frame = document.getElementById('base-frame');
     const bg = document.getElementById('base-bg');
-    const picker = document.getElementById('base-bg-color');
-    const swatch = picker.parentElement;
     
-    // If it's the default blue, show the gradient. Otherwise solid.
-    if (bg) {
-        if (c.toLowerCase() === '#1b0573') {
-            bg.style.background = 'linear-gradient(135deg, #4603e3, #1b0573)';
-        } else {
-            bg.style.background = 'none';
-            bg.style.backgroundColor = c;
-        }
+    if (frame) {
+        frame.className = `base-frame ${f} ${state.baseShape}`;
+        frame.style.display = f === 'none' ? 'none' : 'block';
     }
     
-    picker.value = c;
-    swatch.style.backgroundColor = c;
-
-    // Contrast awareness for placeholder text (only if no custom icon)
-    updateBaseIconFilter();
+    if (bg) {
+        // Remove existing frame classes
+        bg.classList.forEach(cls => {
+            if (cls.startsWith('frame-')) bg.classList.remove(cls);
+        });
+        if (f !== 'none') bg.classList.add('frame-' + f);
+    }
     
+    document.querySelectorAll('[data-base-frame]').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.baseFrame === f);
+    });
+
+    updateBaseBackground();
     syncStateToURL();
+}
+
+function toggleBaseEffect(eff) {
+    if (eff === 'noise') state.baseNoise = !state.baseNoise;
+    if (eff === 'glow') state.baseGlow = !state.baseGlow;
+    if (eff === 'vignette') state.baseVignette = !state.baseVignette;
+    
+    applyBaseEffects();
+    syncStateToURL();
+}
+
+function applyBaseEffects() {
+    const bg = document.getElementById('base-bg');
+    const overlay = document.getElementById('base-overlay');
+    
+    if (bg) {
+        bg.classList.toggle('effect-glow', state.baseGlow);
+        bg.classList.toggle('effect-vignette', state.baseVignette);
+    }
+    
+    if (overlay) {
+        overlay.classList.toggle('noise', state.baseNoise);
+    }
+    
+    // Update button active states
+    document.getElementById('effect-noise').classList.toggle('active', state.baseNoise);
+    document.getElementById('effect-glow').classList.toggle('active', state.baseGlow);
+    document.getElementById('effect-vignette').classList.toggle('active', state.baseVignette);
+}
+
+function setBaseColor1(c) {
+    state.baseColor = c;
+    const picker = document.getElementById('base-bg-color-1');
+    if (picker) {
+        picker.value = c;
+        picker.parentElement.style.setProperty('--swatch-color', c);
+    }
+    updateBaseBackground();
+    updateBaseIconFilter();
+    syncStateToURL();
+}
+
+function setBaseColor2(c) {
+    state.baseColor2 = c;
+    const picker = document.getElementById('base-bg-color-2');
+    if (picker) {
+        picker.value = c;
+        picker.parentElement.style.setProperty('--swatch-color', c);
+    }
+    updateBaseBackground();
+    syncStateToURL();
+}
+
+function setBaseGradientType(t) {
+    state.gradientType = t;
+    
+    // Update active state for buttons
+    document.querySelectorAll('[data-grad-type]').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.gradType === t);
+    });
+    
+    const angleGroup = document.getElementById('base-angle-group');
+    if (angleGroup) {
+        angleGroup.style.display = (t === 'linear' || t === 'conic') ? 'flex' : 'none';
+    }
+    
+    updateBaseBackground();
+    syncStateToURL();
+}
+
+function setBaseGradientAngle(a) {
+    state.gradientAngle = a;
+    const val = document.getElementById('base-angle-val');
+    const input = document.getElementById('base-angle-input');
+    if (val) val.innerText = a;
+    if (input) input.value = a;
+    
+    updateBaseBackground();
+    syncStateToURL();
+}
+
+function setBaseText(val) {
+    state.baseText = val;
+    const input = document.getElementById('base-text-input');
+    if (input) input.value = val;
+    
+    const countEl = document.getElementById('base-text-count');
+    if (countEl) {
+        countEl.innerText = `${val.length}/30`;
+        countEl.classList.toggle('at-limit', val.length >= 30);
+    }
+    
+    updateBasePreview();
+    syncStateToURL();
+}
+
+function setBaseTextColor(color) {
+    state.baseTextColor = color;
+    const picker = document.getElementById('base-text-color');
+    const ui = document.getElementById('base-text-color-ui');
+    if (picker) picker.value = color;
+    if (ui) ui.style.setProperty('--swatch-color', color);
+    updateBasePreview();
+    syncStateToURL();
+}
+
+function updateBasePreview() {
+    const imgEl = document.getElementById('base-img');
+    const textEl = document.getElementById('base-text');
+    
+    const hasCustomIcon = !!state.customBaseIcon;
+    const hasText = state.baseText && state.baseText.trim() !== '';
+    const isDefaultText = state.baseText === 'YOUR TEXT';
+    
+    // We show the text element if there is non-default text OR if there's no custom icon
+    if ((hasText && !isDefaultText) || !hasCustomIcon) {
+        imgEl.style.display = 'none';
+        textEl.style.display = 'flex';
+        
+        const textToShow = hasText ? state.baseText : "YOUR TEXT";
+        textEl.innerText = textToShow;
+        textEl.style.color = state.baseTextColor;
+        
+        // Font size scaling: more aggressive and refined
+        const textLength = textToShow.length;
+        const words = textToShow.split(/\s+/);
+        const longestWordLength = Math.max(...words.map(w => w.length));
+        
+        // Base container size is roughly 400px (at 80% baseSize)
+        const isMobile = window.innerWidth < 1150;
+        const containerWidth = isMobile ? 260 : 320; 
+        const charFactor = isMobile ? 0.85 : 0.72; // Tighter for mobile Outfit font, looser for desktop
+        
+        let fontSize = Math.min(260, containerWidth / (longestWordLength * charFactor));
+        const maxTotalFontSize = (containerWidth * 3.5) / (textLength * charFactor);
+        fontSize = Math.min(fontSize, maxTotalFontSize);
+        
+        fontSize = fontSize * (state.baseSize / 80);
+        if (isMobile) fontSize *= 0.75; // Only apply extra mobile reduction on small screens
+        if (fontSize < 16) fontSize = 16;
+        
+        textEl.style.fontSize = fontSize + 'px';
+        textEl.style.lineHeight = '0.95';
+        
+        const shadow = state.showShadows ? '0 10px 15px rgba(0,0,0,0.3)' : 'none';
+        textEl.style.textShadow = shadow;
+    } else {
+        // Show the uploaded custom icon
+        imgEl.style.display = 'block';
+        textEl.style.display = 'none';
+        if (imgEl.src !== state.customBaseIcon) {
+            imgEl.src = state.customBaseIcon;
+        }
+    }
+}
+
+function updateBaseBackground() {
+    const bg = document.getElementById('base-bg');
+    if (!bg) return;
+    
+    let color1 = state.baseColor;
+    let color2 = state.baseColor2;
+
+    // Apply transparency for glass mode
+    if (state.baseFrame === 'glass') {
+        // Convert hex to 40% opacity hex
+        color1 = color1 + '66';
+        color2 = color2 + '66';
+    }
+    
+    let gradient;
+    if (state.gradientType === 'linear') {
+        gradient = `linear-gradient(${state.gradientAngle}deg, ${color1}, ${color2})`;
+    } else if (state.gradientType === 'radial') {
+        gradient = `radial-gradient(circle, ${color1}, ${color2})`;
+    } else if (state.gradientType === 'conic') {
+        gradient = `conic-gradient(from ${state.gradientAngle}deg, ${color1}, ${color2}, ${color1})`;
+    } else if (state.gradientType === 'mesh') {
+        gradient = `
+            radial-gradient(at 0% 0%, ${color1} 0px, transparent 50%),
+            radial-gradient(at 100% 0%, ${color2} 0px, transparent 50%),
+            radial-gradient(at 100% 100%, ${color1} 0px, transparent 50%),
+            radial-gradient(at 0% 100%, ${color2} 0px, transparent 50%),
+            ${color1}
+        `.trim().replace(/\n\s+/g, ' ');
+    }
+    
+    bg.style.background = gradient;
+}
+
+function setBaseColor(c) {
+    // This function is kept for backward compatibility if needed, 
+    // but we now use setBaseColor1 and setBaseColor2.
+    setBaseColor1(c);
 }
 
 function updateBaseIconFilter() {
@@ -488,17 +748,19 @@ async function handleBaseIconUpload(event) {
     } finally {
         imgEl.style.opacity = originalOpacity;
         updateRemoveButtonVisibility();
+        updateBasePreview();
         syncStateToURL();
     }
 }
 
 function resetBaseIcon() {
     state.customBaseIcon = null;
-    document.getElementById('base-img').src = 'assets/img/base-placeholder.svg';
     localStorage.removeItem('iconStudio_baseIcon');
     document.getElementById('base-icon-upload').value = '';
     setBaseColor('#1b0573');
     updateRemoveButtonVisibility();
+    updateBasePreview();
+    syncStateToURL();
 }
 
 function setBadgePosition(pos) {
@@ -510,9 +772,14 @@ function setBadgePosition(pos) {
     canvas.classList.remove('pos-top-left', 'pos-top-right', 'pos-bottom-left', 'pos-bottom-right');
     wrap.classList.remove('pos-top-left', 'pos-top-right', 'pos-bottom-left', 'pos-bottom-right');
     
-    // Add new position classes
-    canvas.classList.add('pos-' + pos);
-    wrap.classList.add('pos-' + pos);
+    if (pos === 'none') {
+        wrap.style.display = 'none';
+    } else {
+        wrap.style.display = 'flex';
+        // Add new position classes
+        canvas.classList.add('pos-' + pos);
+        wrap.classList.add('pos-' + pos);
+    }
     
     document.querySelectorAll('[data-pos]').forEach(btn => {
         btn.classList.toggle('active', btn.dataset.pos === pos);
@@ -537,6 +804,7 @@ function setColor(c) {
     state.color = c;
     document.getElementById('badge-shape').style.backgroundColor = c;
     document.getElementById('custom-color').value = c;
+    document.getElementById('custom-color-ui').style.setProperty('--swatch-color', c);
     
     // Update icon color based on contrast
     const iconColor = getContrastColor(c);
@@ -611,6 +879,7 @@ function setBaseSize(v) {
         bg.style.width = v + '%';
         bg.style.height = v + '%';
     }
+    updateBasePreview();
     syncStateToURL();
 }
 
@@ -661,6 +930,7 @@ function toggleShadows(v) {
     const badge = document.getElementById('badge-wrap');
     
     updateBaseIconFilter();
+    updateBasePreview();
     badge.style.filter = v ? 'drop-shadow(0 12px 20px rgba(0,0,0,0.4))' : 'none';
     syncStateToURL();
 }
@@ -676,7 +946,17 @@ function resetDefaults() {
     setBadgePosition('bottom-right');
     toggleShadows(true);
     setBaseShape('squircle');
-    setBaseColor('#1b0573');
+    setBaseColor1('#4603e3');
+    setBaseColor2('#1b0573');
+    setBaseGradientType('linear');
+    setBaseGradientAngle(135);
+    setBaseText('YOUR TEXT');
+    setBaseTextColor('#ffffff');
+    setBaseFrame('none');
+    state.baseNoise = false;
+    state.baseGlow = false;
+    state.baseVignette = false;
+    applyBaseEffects();
     document.getElementById('shadow-toggle').checked = true;
     
     // Update range inputs
@@ -783,3 +1063,21 @@ window.addEventListener('keydown', (e) => {
 });
 
 init();
+function toggleBaseDrawer() {
+    const drawer = document.getElementById('base-drawer');
+    const trigger = document.getElementById('drawer-trigger');
+    if (!drawer || !trigger) return;
+    
+    drawer.classList.toggle('active');
+    trigger.classList.toggle('active');
+}
+
+// Ensure drawer is reset if window is resized above mobile breakpoint
+window.addEventListener('resize', () => {
+    if (window.innerWidth > 1150) {
+        const drawer = document.getElementById('base-drawer');
+        const trigger = document.getElementById('drawer-trigger');
+        if (drawer) drawer.classList.remove('active');
+        if (trigger) trigger.classList.remove('active');
+    }
+});

@@ -1,7 +1,6 @@
 <svg width="1024" height="1024" viewBox="0 0 1024 1024" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <path d="M512 300C395.14 300 300 395.14 300 512C300 628.86 395.14 724 512 724C628.86 724 724 628.86 724 512C724 395.14 628.86 300 512 300ZM512 660C430.4 660 364 593.6 364 512C364 430.4 430.4 364 512 364C593.6 364 660 430.4 660 512C660 593.6 593.6 660 512 660Z" fill="white" fill-opacity="0.2"/>
   <text x="50%" y="45%" text-anchor="middle" font-family="Outfit, system-ui, sans-serif" font-weight="700" font-size="250" fill="white">
     <tspan x="50%" dy="0">YOUR</tspan>
-    <tspan x="50%" dy="240">ICON</tspan>
+    <tspan x="50%" dy="240">TEXT</tspan>
   </text>
 </svg>
