@@ -2,9 +2,28 @@
 <html lang="en" translate="no">
 <head>
     <meta charset="UTF-8">
+    <script>
+        // Theme initialization to prevent flicker
+        (function() {
+            const savedTheme = localStorage.getItem('theme') || 'dark';
+            if (savedTheme === 'system') {
+                document.documentElement.removeAttribute('data-theme');
+            } else {
+                document.documentElement.setAttribute('data-theme', savedTheme);
+            }
+        })();
+    </script>
     <meta name="google" content="notranslate">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Icon Badge Studio</title>
+    <title>Icon Badge Studio | Professional Icon & Badge Maker</title>
+    <meta name="description" content="Create premium icons with customizable badges, rich gradients, and skeuomorphic effects. Export high-quality PNGs and share designs via URL.">
+    
+    <!-- Open Graph -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://iconbadgestudio.ryanmarch.me/">
+    <meta property="og:title" content="Icon Badge Studio | Professional Icon & Badge Maker">
+    <meta property="og:description" content="Create premium icons with customizable badges, rich gradients, and skeuomorphic effects.">
+    <meta property="og:image" content="https://iconbadgestudio.ryanmarch.me/assets/favicon/web-app-manifest-512x512.png">
     
     <!-- Fonts & Icons -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -29,10 +48,10 @@
     <div class="screenshot-toolbar">
         <div class="toolbar-main">
             <button class="toolbar-btn secondary" onclick="toggleScreenshotMode()">
-                <i data-lucide="arrow-left" style="width:16px;height:16px"></i> Return
+                <i data-lucide="arrow-left"></i> Return
             </button>
             <button class="toolbar-btn primary" onclick="exportPNG()">
-                <i data-lucide="download" style="width:16px;height:16px"></i> Export
+                <i data-lucide="download"></i> Export
             </button>
         </div>
         <div class="toolbar-sub">
@@ -48,30 +67,21 @@
         <div class="preview-section">
             <div class="preview-header">
                 <h1>Icon Badge Studio</h1>
-                <div class="header-actions">
-                    <div style="display: flex; flex-direction: column; gap: 0.4rem; align-items: flex-end;">
-                        <div style="display: flex; gap: 0.5rem; width: 100%; align-items: stretch;">
-                            <button id="remove-base-icon" class="danger" style="width: 40px; display: none; padding: 0; justify-content: center;" onclick="resetBaseIcon()" title="Remove uploaded image">
-                                <i data-lucide="trash-2" style="width:16px;height:16px"></i>
-                            </button>
-                            <button class="secondary" style="padding: 0.5rem 0.75rem; flex: 1; white-space: nowrap;" onclick="document.getElementById('base-icon-upload').click()">
-                                <i data-lucide="upload" style="width:16px;height:16px"></i> Upload Base Image
-                            </button>
-                        </div>
-                        <div class="base-bg-control" style="display: flex; align-items: center; gap: 0.5rem;">
-                            <label for="base-bg-color" style="font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600; letter-spacing: 0.02em; cursor: pointer;">Base background color</label>
-                            <div class="base-color-picker" title="Base Background Color">
-                                <input type="color" id="base-bg-color" value="#ffffff" oninput="setBaseColor(this.value)">
-                            </div>
-                        </div>
-                    </div>
-                    <input type="file" id="base-icon-upload" accept="image/*" style="display: none" onchange="handleBaseIconUpload(event)">
-                </div>
+                <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme">
+                    <svg class="sun-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+                    <svg class="moon-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+                    <svg class="system-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>
+                    <span id="theme-status" class="theme-status"></span>
+                </button>
             </div>
 
             <div class="icon-canvas-wrapper" id="capture-area">
                 <div class="icon-canvas pos-bottom-right" id="icon-canvas">
-                    <div class="base-bg squircle" id="base-bg"></div>
+                    <div class="base-bg squircle" id="base-bg">
+                        <div class="base-text" id="base-text">YOUR TEXT</div>
+                        <div class="base-overlay" id="base-overlay"></div>
+                        <div class="base-frame" id="base-frame"></div>
+                    </div>
                     <img src="assets/img/base-placeholder.svg" alt="Placeholder Icon" class="base-icon" id="base-img">
                     <div class="badge-container pos-bottom-right" id="badge-wrap">
                         <div class="badge-shape circle" id="badge-shape"></div>
@@ -84,40 +94,147 @@
 
             <div class="preview-actions">
                 <button class="primary" onclick="exportPNG()">
-                    <i data-lucide="download" style="width:18px;height:18px"></i> Export PNG
+                    <i data-lucide="download"></i> Export PNG
                 </button>
                 <button id="copy-url-btn" class="secondary" style="display: none;" onclick="copyURL()">
-                    <i data-lucide="copy" style="width:18px;height:18px"></i> Copy URL
+                    <i data-lucide="copy"></i> Copy URL
                 </button>
                 <button class="secondary" onclick="toggleScreenshotMode()">
-                    <i data-lucide="maximize" style="width:18px;height:18px"></i> Screenshot Mode
+                    <i data-lucide="maximize"></i> Screenshot Mode
                 </button>
             </div>
         </div>
+        <hr class="mobile-divider">
 
-        <!-- Controls -->
+        <!-- Base Controls (Middle Column) -->
+        <div class="controls-section">
+            <div class="control-group">
+                <label>Base Image</label>
+                <div style="display: flex; gap: 0.5rem; width: 100%; align-items: stretch;">
+                    <button id="remove-base-icon" class="danger" style="width: 40px; display: none; padding: 0; justify-content: center;" onclick="resetBaseIcon()" title="Remove uploaded image">
+                        <i data-lucide="trash-2"></i>
+                    </button>
+                    <button class="primary" style="padding: 0.5rem 0.75rem; flex: 1; white-space: nowrap;" onclick="document.getElementById('base-icon-upload').click()">
+                        <i data-lucide="upload"></i> Upload Image
+                    </button>
+                </div>
+                <input type="file" id="base-icon-upload" accept="image/*" style="display: none" onchange="handleBaseIconUpload(event)">
+            </div>
+
+            <button class="drawer-trigger mobile-only" id="drawer-trigger" onclick="toggleBaseDrawer()">
+                <i data-lucide="sliders"></i>
+                <span>More Base Layer Options</span>
+                <i data-lucide="chevron-down" class="arrow-icon" style="margin-left:auto"></i>
+            </button>
+
+            <div class="mobile-drawer" id="base-drawer">
+                <div class="drawer-content">
+                    <div class="drawer-scroll-area">
+                        <div class="control-group">
+                            <div class="range-header">
+                                <label>Base Image Size</label>
+                                <span class="range-val"><span id="base-size-val">80</span>%</span>
+                            </div>
+                            <input type="range" id="base-size-input" min="50" max="100" value="80" oninput="setBaseSize(this.value)">
+                        </div>
+
+                        <div class="compact-row">
+                            <div class="control-group">
+                                <label>Base Colors</label>
+                                <div class="color-presets">
+                                    <div class="custom-color-wrapper" title="Base Color 1" style="--swatch-color: #4603e3">
+                                        <input type="color" id="base-bg-color-1" value="#4603e3" oninput="setBaseColor1(this.value)">
+                                    </div>
+                                    <div class="custom-color-wrapper" title="Base Color 2" style="--swatch-color: #1b0573">
+                                        <input type="color" id="base-bg-color-2" value="#1b0573" oninput="setBaseColor2(this.value)">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="control-group">
+                                <label>Gradient Type</label>
+                                <div class="shape-grid-2x2">
+                                    <button class="shape-btn shape-btn-sm active" data-grad-type="linear" onclick="setBaseGradientType('linear')">Linear</button>
+                                    <button class="shape-btn shape-btn-sm" data-grad-type="radial" onclick="setBaseGradientType('radial')">Radial</button>
+                                    <button class="shape-btn shape-btn-sm" data-grad-type="conic" onclick="setBaseGradientType('conic')">Conic</button>
+                                    <button class="shape-btn shape-btn-sm" data-grad-type="mesh" onclick="setBaseGradientType('mesh')">Mesh</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="control-group" id="base-angle-group">
+                            <div class="range-header">
+                                <label>Gradient Angle</label>
+                                <span class="range-val"><span id="base-angle-val">135</span>°</span>
+                            </div>
+                            <input type="range" id="base-angle-input" min="0" max="360" value="135" oninput="setBaseGradientAngle(this.value)">
+                        </div>
+
+                        <div class="control-group">
+                            <div class="label-row" style="margin-bottom: 0;">
+                                <label style="margin-bottom: 0;">Base Text</label>
+                                <label style="margin-bottom: 0;">Color</label>
+                            </div>
+                            <div class="text-color-row" style="align-items: center;">
+                                <div style="position: relative; flex: 1;">
+                                    <input type="text" id="base-text-input" placeholder="e.g. AB, 🚀, YOUR TEXT" oninput="setBaseText(this.value)" maxlength="30" style="width: 100%; padding-right: 3rem;">
+                                    <span class="char-count" id="base-text-count" style="position: absolute; right: 0.75rem; top: 50%; transform: translateY(-50%); font-size: 0.7rem; opacity: 0.5; pointer-events: none;">0/30</span>
+                                </div>
+                                <div class="custom-color-wrapper rect" id="base-text-color-ui" title="Text Color" style="--swatch-color: #ffffff; margin: 0;">
+                                    <input type="color" id="base-text-color" value="#ffffff" oninput="setBaseTextColor(this.value)">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="control-group">
+                            <label>Base Shape</label>
+                            <div class="shape-grid-2x2">
+                                <button class="shape-btn shape-btn-sm" data-base-shape="square" onclick="setBaseShape('square')">Square</button>
+                                <button class="shape-btn shape-btn-sm active" data-base-shape="squircle" onclick="setBaseShape('squircle')">Squircle</button>
+                                <button class="shape-btn shape-btn-sm" data-base-shape="roundrect" onclick="setBaseShape('roundrect')">Round</button>
+                                <button class="shape-btn shape-btn-sm" data-base-shape="circle" onclick="setBaseShape('circle')">Circle</button>
+                            </div>
+                        </div>
+
+                        <div class="control-group">
+                            <label>Base Frame</label>
+                            <div class="shape-grid-2x2">
+                                <button class="shape-btn shape-btn-sm active" data-base-frame="none" onclick="setBaseFrame('none')">None</button>
+                                <button class="shape-btn shape-btn-sm" data-base-frame="shine" onclick="setBaseFrame('shine')">Glossy</button>
+                                <button class="shape-btn shape-btn-sm" data-base-frame="border" onclick="setBaseFrame('border')">Border</button>
+                                <button class="shape-btn shape-btn-sm" data-base-frame="metallic" onclick="setBaseFrame('metallic')">Metallic</button>
+                                <button class="shape-btn shape-btn-sm" data-base-frame="glass" onclick="setBaseFrame('glass')">Glass</button>
+                                <button class="shape-btn shape-btn-sm" data-base-frame="emboss" onclick="setBaseFrame('emboss')">Emboss</button>
+                            </div>
+                        </div>
+
+                        <div class="control-group">
+                            <label>Base Effects</label>
+                            <div class="shape-grid-2x2" style="grid-template-columns: repeat(3, 1fr);">
+                                <button class="shape-btn shape-btn-sm" id="effect-noise" onclick="toggleBaseEffect('noise')">Noise</button>
+                                <button class="shape-btn shape-btn-sm" id="effect-glow" onclick="toggleBaseEffect('glow')">Glow</button>
+                                <button class="shape-btn shape-btn-sm" id="effect-vignette" onclick="toggleBaseEffect('vignette')">Vignette</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+        <hr class="mobile-divider">
+
+        <!-- Badge Controls (Right Column) -->
         <div class="controls-section">
             
-            <div class="compact-row">
-                <div class="control-group">
-                    <label>Base Shape</label>
-                    <div class="shape-grid-2x2">
-                        <button class="shape-btn shape-btn-sm" data-base-shape="square" onclick="setBaseShape('square')">Square</button>
-                        <button class="shape-btn shape-btn-sm active" data-base-shape="squircle" onclick="setBaseShape('squircle')">Squircle</button>
-                        <button class="shape-btn shape-btn-sm" data-base-shape="roundrect" onclick="setBaseShape('roundrect')">Round</button>
-                        <button class="shape-btn shape-btn-sm" data-base-shape="circle" onclick="setBaseShape('circle')">Circle</button>
-                    </div>
+            <div class="control-group">
+                <label>Badge Position</label>
+                <div class="shape-grid-2x2" style="margin-bottom: 0.35rem;">
+                    <button class="shape-btn shape-btn-sm" data-pos="top-left" onclick="setBadgePosition('top-left')">Top L</button>
+                    <button class="shape-btn shape-btn-sm" data-pos="top-right" onclick="setBadgePosition('top-right')">Top R</button>
+                    <button class="shape-btn shape-btn-sm" data-pos="bottom-left" onclick="setBadgePosition('bottom-left')">Bot L</button>
+                    <button class="shape-btn shape-btn-sm active" data-pos="bottom-right" onclick="setBadgePosition('bottom-right')">Bot R</button>
                 </div>
-
-                <div class="control-group">
-                    <label>Badge Position</label>
-                    <div class="shape-grid-2x2">
-                        <button class="shape-btn shape-btn-sm" data-pos="top-left" onclick="setBadgePosition('top-left')">Top L</button>
-                        <button class="shape-btn shape-btn-sm" data-pos="top-right" onclick="setBadgePosition('top-right')">Top R</button>
-                        <button class="shape-btn shape-btn-sm" data-pos="bottom-left" onclick="setBadgePosition('bottom-left')">Bot L</button>
-                        <button class="shape-btn shape-btn-sm active" data-pos="bottom-right" onclick="setBadgePosition('bottom-right')">Bot R</button>
-                    </div>
-                </div>
+                <button class="shape-btn shape-btn-sm" data-pos="none" onclick="setBadgePosition('none')" style="width: 100%;">None</button>
             </div>
 
             <div class="control-group">
@@ -138,8 +255,8 @@
                 <label>Badge Color</label>
                 <div class="color-presets" id="color-presets">
                     <!-- Dynamic swatches -->
-                    <div class="custom-color-wrapper" id="custom-color-ui" title="Custom Color">
-                        <i data-lucide="plus" style="width:20px;height:20px;color:white"></i>
+                    <div class="custom-color-wrapper" id="custom-color-ui" title="Custom Color" style="--swatch-color: #3b82f6">
+                        <i data-lucide="plus" style="color:white"></i>
                         <input type="color" id="custom-color" value="#3b82f6" oninput="setColor(this.value)">
                     </div>
                 </div>
@@ -186,27 +303,64 @@
                 <input type="range" id="inner-scale-input" min="20" max="100" value="70" oninput="setInnerScale(this.value)">
             </div>
 
-            <div class="control-group">
-                <div class="range-header">
-                    <label>Base Image Size</label>
-                    <span class="range-val"><span id="base-size-val">80</span>%</span>
-                </div>
-                <input type="range" id="base-size-input" min="50" max="100" value="80" oninput="setBaseSize(this.value)">
-            </div>
-
             <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 0.5rem; padding-top: 1rem; border-top: 1px solid var(--glass-border);">
                 <div style="display: flex; align-items: center; gap: 0.5rem;">
                     <input type="checkbox" id="shadow-toggle" checked onchange="toggleShadows(this.checked)" style="width: 16px; height: 16px; accent-color: var(--accent); cursor: pointer;">
                     <label for="shadow-toggle" style="margin: 0; cursor: pointer; text-transform: none; font-size: 0.75rem; color: var(--text-muted);">Show Shadows</label>
                 </div>
                 <button class="secondary" style="padding: 0.5rem 0.75rem; font-size: 0.75rem;" onclick="resetDefaults()">
-                    <i data-lucide="refresh-cw" style="width:14px;height:14px"></i> Reset All
+                    <i data-lucide="refresh-cw"></i> Reset All
                 </button>
             </div>
         </div>
+
     </div>
 
     <!-- Main Script -->
     <script src="script.js"></script>
+    <script>
+        // Theme Toggle Logic
+        let themeStatusTimeout;
+        const themeToggle = document.getElementById('theme-toggle');
+        const themeStatus = document.getElementById('theme-status');
+
+        const showThemeStatus = (text) => {
+            if (!themeStatus) return;
+            themeStatus.textContent = text;
+            themeStatus.classList.add('visible');
+            clearTimeout(themeStatusTimeout);
+            themeStatusTimeout = setTimeout(() => {
+                themeStatus.classList.remove('visible');
+            }, 2000);
+        };
+
+        if (themeToggle) {
+            themeToggle.addEventListener('click', () => {
+                const currentTheme = localStorage.getItem('theme') || 'dark';
+                let newTheme;
+                let statusText;
+                
+                if (currentTheme === 'dark') {
+                    newTheme = 'light';
+                    statusText = 'Light Theme';
+                } else if (currentTheme === 'light') {
+                    newTheme = 'system';
+                    statusText = 'System Theme';
+                } else {
+                    newTheme = 'dark';
+                    statusText = 'Dark Theme';
+                }
+                
+                if (newTheme === 'system') {
+                    document.documentElement.removeAttribute('data-theme');
+                } else {
+                    document.documentElement.setAttribute('data-theme', newTheme);
+                }
+                
+                localStorage.setItem('theme', newTheme);
+                showThemeStatus(statusText);
+            });
+        }
+    </script>
 </body>
 </html>
