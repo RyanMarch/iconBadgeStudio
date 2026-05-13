@@ -37,10 +37,10 @@
     <div class="screenshot-toolbar">
         <div class="toolbar-main">
             <button class="toolbar-btn secondary" onclick="toggleScreenshotMode()">
-                <i data-lucide="arrow-left" style="width:16px;height:16px"></i> Return
+                <i data-lucide="arrow-left"></i> Return
             </button>
             <button class="toolbar-btn primary" onclick="exportPNG()">
-                <i data-lucide="download" style="width:16px;height:16px"></i> Export
+                <i data-lucide="download"></i> Export
             </button>
         </div>
         <div class="toolbar-sub">
@@ -77,13 +77,13 @@
 
             <div class="preview-actions">
                 <button class="primary" onclick="exportPNG()">
-                    <i data-lucide="download" style="width:18px;height:18px"></i> Export PNG
+                    <i data-lucide="download"></i> Export PNG
                 </button>
                 <button id="copy-url-btn" class="secondary" style="display: none;" onclick="copyURL()">
-                    <i data-lucide="copy" style="width:18px;height:18px"></i> Copy URL
+                    <i data-lucide="copy"></i> Copy URL
                 </button>
                 <button class="secondary" onclick="toggleScreenshotMode()">
-                    <i data-lucide="maximize" style="width:18px;height:18px"></i> Screenshot Mode
+                    <i data-lucide="maximize"></i> Screenshot Mode
                 </button>
             </div>
         </div>
@@ -95,19 +95,19 @@
                 <label>Base Image</label>
                 <div style="display: flex; gap: 0.5rem; width: 100%; align-items: stretch;">
                     <button id="remove-base-icon" class="danger" style="width: 40px; display: none; padding: 0; justify-content: center;" onclick="resetBaseIcon()" title="Remove uploaded image">
-                        <i data-lucide="trash-2" style="width:16px;height:16px"></i>
+                        <i data-lucide="trash-2"></i>
                     </button>
                     <button class="primary" style="padding: 0.5rem 0.75rem; flex: 1; white-space: nowrap;" onclick="document.getElementById('base-icon-upload').click()">
-                        <i data-lucide="upload" style="width:16px;height:16px"></i> Upload Image
+                        <i data-lucide="upload"></i> Upload Image
                     </button>
                 </div>
                 <input type="file" id="base-icon-upload" accept="image/*" style="display: none" onchange="handleBaseIconUpload(event)">
             </div>
 
             <button class="drawer-trigger mobile-only" id="drawer-trigger" onclick="toggleBaseDrawer()">
-                <i data-lucide="sliders" style="width:16px;height:16px"></i>
+                <i data-lucide="sliders"></i>
                 <span>More Base Layer Options</span>
-                <i data-lucide="chevron-down" class="arrow-icon" style="width:16px;height:16px;margin-left:auto"></i>
+                <i data-lucide="chevron-down" class="arrow-icon" style="margin-left:auto"></i>
             </button>
 
             <div class="mobile-drawer" id="base-drawer">
@@ -239,7 +239,7 @@
                 <div class="color-presets" id="color-presets">
                     <!-- Dynamic swatches -->
                     <div class="custom-color-wrapper" id="custom-color-ui" title="Custom Color" style="--swatch-color: #3b82f6">
-                        <i data-lucide="plus" style="width:14px;height:14px;color:white"></i>
+                        <i data-lucide="plus" style="color:white"></i>
                         <input type="color" id="custom-color" value="#3b82f6" oninput="setColor(this.value)">
                     </div>
                 </div>
@@ -292,7 +292,7 @@
                     <label for="shadow-toggle" style="margin: 0; cursor: pointer; text-transform: none; font-size: 0.75rem; color: var(--text-muted);">Show Shadows</label>
                 </div>
                 <button class="secondary" style="padding: 0.5rem 0.75rem; font-size: 0.75rem;" onclick="resetDefaults()">
-                    <i data-lucide="refresh-cw" style="width:14px;height:14px"></i> Reset All
+                    <i data-lucide="refresh-cw"></i> Reset All
                 </button>
             </div>
         </div>

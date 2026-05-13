@@ -102,8 +102,6 @@ function syncStateToURL() {
         params.delete('mode');
     }
 
-    // Always move 'img' to the end
-    params.delete('img');
     if (state.customBaseIcon && state.customBaseIcon.startsWith('http')) {
         let displayUrl = state.customBaseIcon;
         const prefix = 'https://res.cloudinary.com/rm20abcd26/image/upload/';
@@ -111,6 +109,8 @@ function syncStateToURL() {
             displayUrl = 'cld:' + displayUrl.replace(prefix, '');
         }
         params.set('img', displayUrl);
+    } else {
+        params.delete('img');
     }
 
     const newSearch = params.toString();
@@ -652,11 +652,6 @@ function updateBaseBackground() {
     bg.style.background = gradient;
 }
 
-function setBaseColor(c) {
-    // This function is kept for backward compatibility if needed, 
-    // but we now use setBaseColor1 and setBaseColor2.
-    setBaseColor1(c);
-}
 
 function updateBaseIconFilter() {
     const img = document.getElementById('base-img');
@@ -757,7 +752,7 @@ function resetBaseIcon() {
     state.customBaseIcon = null;
     localStorage.removeItem('iconStudio_baseIcon');
     document.getElementById('base-icon-upload').value = '';
-    setBaseColor('#1b0573');
+    setBaseColor1('#1b0573');
     updateRemoveButtonVisibility();
     updateBasePreview();
     syncStateToURL();
