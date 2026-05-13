@@ -30,17 +30,17 @@ A premium, web-based tool for creating professional icons with customizable badg
 - **High-Quality Export**: One-click PNG export and a dedicated **Screenshot Mode** for high-resolution captures.
 - **Privacy First**: Local storage fallback ensures your work is saved even if cloud services are unavailable.
 
+## Responsive Design
+- **Theme Chooser**: Easily switch between light and dark mode for distraction-free editing.
+- **Optimized for all devices**: Responsive design means icon editing can happen wherever inspiration strikes.
+
 ## Built With
 
-- **Vanilla JS/HTML5/CSS3**: Zero heavy frameworks for maximum performance and compatibility.
+- **Vanilla JS/HTML5/CSS3**: For maximum performance and compatibility.
 - **[Cloudinary](https://cloudinary.com/)**: Scalable image hosting for shareable URLs.
 - **[Lucide](https://lucide.dev/)**: For a beautiful and consistent icon set.
 - **[dom-to-image](https://github.com/tsayen/dom-to-image)**: Precision canvas-to-image conversion.
 - **Google Fonts**: Featuring 'Outfit' and 'Inter' for a premium typography experience.
-
-## Responsive Design
-
-Optimized for all devices. Use the full desktop suite for precise editing, or the streamlined mobile interface with a collapsible base-layer drawer for on-the-go design.
 
 ---
 
