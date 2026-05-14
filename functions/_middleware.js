@@ -33,16 +33,23 @@ export async function onRequest(context) {
         if (isDeepFried) iconTransform += ',e_saturation:100,e_contrast:100,e_sharpen:1000';
     }
 
-    const cleanText = encodeURIComponent(text.replace(/[#&?%]/g, '').toUpperCase());
+    // Auto-wrap icon text if it has multiple words (match app behavior)
+    let processedText = text.toUpperCase().replace(/[#&?%]/g, '');
+    if (processedText.includes(' ') && processedText.length > 7) {
+        const words = processedText.split(' ');
+        const mid = Math.floor(words.length / 2);
+        processedText = words.slice(0, mid).join(' ') + '\n' + words.slice(mid).join(' ');
+    }
+    const cleanText = encodeURIComponent(processedText);
     
-    // FANCY PRODUCT SHOT (Safe side-by-side layout)
+    // FANCY PRODUCT SHOT (Final professional layout with auto-wrapping)
     const imageUrl = [
         `https://res.cloudinary.com/rm20abcd26/image/upload`,
-        `c_fill,w_400,h_400,r_${radius},${iconTransform}`,
-        `l_text:Arial_65_bold:${cleanText},co_rgb:ffffff,w_350,c_fit`,
-        `c_pad,w_1200,h_630,b_rgb:0f172a,g_west,x_100`,
-        `l_text:Arial_80_bold:Icon%20Studio,co_rgb:a5b4fc,g_west,x_600,y_-70`,
-        `l_text:Arial_50_bold:View%20shared%0Aicon%20design,co_rgb:ffffff,g_west,x_600,y_70,w_500,c_fit`,
+        `c_fill,w_1200,h_630,co_rgb:0f172a,e_colorize:100`, // Step 1: Create canvas
+        `l_${baseImageId.replace(/\//g, ':')}/c_fill,w_450,h_450,r_${radius},${iconTransform}/fl_layer_apply,g_center,x_-300`, // Step 2: Pin icon
+        `l_text:Arial_80_bold_line_spacing_-20:${cleanText},co_rgb:ffffff/fl_layer_apply,g_center,x_-300,w_400,c_fit`, // Step 3: Pin icon text (centered + wrapped)
+        `l_text:Montserrat_95_bold_letter_spacing_-2:Icon%20Studio,co_rgb:818cf8/fl_layer_apply,g_west,x_620,y_-120`, // Step 4: Brand title
+        `l_text:Montserrat_55_bold:View%20shared%0Aicon%20design,co_rgb:ffffff/fl_layer_apply,g_west,x_620,y_80,w_500,c_fit`, // Step 5: Subtitle
         `${version ? version + '/' : ''}${baseImageId}.jpg`
     ].join('/');
 
