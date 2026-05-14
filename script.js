@@ -1037,7 +1037,13 @@ async function copyURL() {
     const originalContent = btn.innerHTML;
     
     try {
-        await navigator.clipboard.writeText(window.location.href);
+        let url = window.location.href;
+        if (window.location.search) {
+            // Replace the root path with /view for a better share preview
+            // This will be handled dynamically by a Cloudflare Function
+            url = url.replace(window.location.origin + '/', window.location.origin + '/view');
+        }
+        await navigator.clipboard.writeText(url);
         
         // Success state
         btn.innerHTML = '<i data-lucide="check" style="width:18px;height:18px"></i> Copied!';
