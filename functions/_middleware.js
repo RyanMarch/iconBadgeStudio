@@ -12,27 +12,28 @@ export async function onRequest(context) {
     const pos = params.get('pos') || 'bottom-right';
     const isDeepFried = params.get('bdf') === 'true';
     
-    // 1. Background Logic
     let imgParam = params.get('img') || '';
     let baseImageId = 'one_pixel.png';
     let baseTransform = `e_colorize:100,co_rgb:${color}`;
 
     if (imgParam.startsWith('cld:')) {
+        // Extract the ID and fix spaces/special characters for Cloudinary path
         baseImageId = imgParam.replace('cld:', '');
+        // Cloudinary needs spaces to be %20 and handles slashes naturally in the path
+        baseImageId = baseImageId.split('/').map(part => encodeURIComponent(part)).join('/');
+        
         baseTransform = 'c_fill';
         if (isDeepFried) {
             baseTransform += ',e_saturation:100,e_contrast:100,e_sharpen:500';
         }
     }
     
-    // 2. Badge Positioning
     let gravity = 'south_east';
     if (pos === 'top-left') gravity = 'north_west';
     if (pos === 'top-right') gravity = 'north_east';
     if (pos === 'bottom-left') gravity = 'south_west';
     
-    // 3. Lucide Icon Fetch
-    // We fetch the SVG directly from unpkg
+    // Lucide Icon Fetch (Base64 encoded for Cloudinary l_fetch)
     const lucideUrl = `https://unpkg.com/lucide-static@latest/icons/${icon}.svg`;
     const b64Lucide = btoa(lucideUrl).replace(/\//g, '_').replace(/\+/g, '-').replace(/=/g, '');
     
@@ -41,19 +42,13 @@ export async function onRequest(context) {
     const cleanText = encodeURIComponent(text.replace(/[#&?%]/g, '').toUpperCase());
     
     // THE ULTIMATE DYNAMIC IMAGE
-    // Layers: [Background] -> [Text] -> [Branding] -> [Badge Circle] -> [Badge Icon]
     const imageUrl = [
         `https://res.cloudinary.com/rm20abcd26/image/upload`,
         `w_1200,h_630,${baseTransform}`,
-        // Main Text
         `l_text:Arial_100_bold:${cleanText},co_rgb:ffffff,w_1000,c_fit`,
-        // Branding
         `l_text:Arial_30_bold_letter_spacing_10:ICON%20STUDIO,co_rgb:ffffff,g_north,y_50,o_50`,
-        // Badge Circle
         `l_one_pixel,w_250,h_250,c_fill,r_max,co_rgb:${badgeColor},e_colorize:100,g_${gravity},x_50,y_50`,
-        // Badge Icon (Lucide)
         `l_fetch:${b64Lucide},w_150,h_150,co_rgb:ffffff,e_colorize:100,g_${gravity},x_100,y_100`,
-        // Final base image
         baseImageId
     ].join('/');
 
