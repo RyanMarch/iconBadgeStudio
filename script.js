@@ -1036,6 +1036,10 @@ function setBaseSize(v) {
     if (bg) {
         bg.style.width = v + '%';
         bg.style.height = v + '%';
+        
+        // Dynamic nudge: ensure (size + nudge) <= 100% to prevent overflow
+        const nudge = Math.max(0, Math.min(4, 100 - v));
+        document.documentElement.style.setProperty('--base-nudge', nudge + '%');
     }
     updateBasePreview();
     syncStateToURL();

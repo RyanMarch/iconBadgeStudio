@@ -17,6 +17,7 @@
     --preview-canvas-bg: #1c1c1c;
     --shadow-color: rgba(0, 0, 0, 0.5);
     --sidebar-bg: rgba(2, 6, 23, 0.4);
+    --base-nudge: 4%;
 }
 
 [data-theme="light"] {
@@ -172,6 +173,7 @@ h1 {
     transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
     /* Enable container queries to keep text proportional */
     container-type: inline-size;
+    overflow: hidden;
 }
 
 @media (max-width: 1150px) {
@@ -294,7 +296,7 @@ h1 {
     height: 78%;
     aspect-ratio: 1/1;
     background: linear-gradient(90deg, #3b82f6, #1D0945);
-    transition: all 0.3s ease, background 0.3s ease;
+    transition: border-radius 0.3s ease, background 0.3s ease, transform 0.3s ease;
     overflow: hidden;
     z-index: 1;
     display: flex;
@@ -317,7 +319,7 @@ h1 {
     inset: 0;
     pointer-events: none;
     z-index: 6;
-    transition: all 0.3s ease;
+    transition: border-radius 0.3s ease, border 0.3s ease, box-shadow 0.3s ease;
 }
 
 .base-overlay {
@@ -325,7 +327,7 @@ h1 {
     inset: 0;
     pointer-events: none;
     z-index: 4;
-    transition: all 0.3s ease;
+    transition: opacity 0.3s ease, background-image 0.3s ease;
     mix-blend-mode: overlay;
     opacity: 0;
 }
@@ -341,7 +343,7 @@ h1 {
     inset: 0;
     pointer-events: none;
     z-index: 5;
-    transition: all 0.3s ease;
+    transition: box-shadow 0.3s ease, background 0.3s ease;
     transform: translateZ(0);
 }
 
@@ -497,7 +499,7 @@ h1 {
     height: 100%;
     object-fit: cover;
     filter: drop-shadow(0 10px 15px rgba(0,0,0,0.3));
-    transition: all 0.3s ease, filter 0.3s ease;
+    transition: transform 0.3s ease, filter 0.3s ease, opacity 0.3s ease;
     z-index: 1; /* Behind text and overlays */
     background: transparent !important;
     will-change: transform;
@@ -516,7 +518,7 @@ h1 {
     z-index: 2;
     pointer-events: none;
     user-select: none;
-    transition: all 0.3s ease;
+    transition: font-size 0.3s ease, color 0.3s ease, text-shadow 0.3s ease, opacity 0.3s ease;
     white-space: pre-line;
     overflow-wrap: break-word;
     word-break: normal;
@@ -531,7 +533,7 @@ h1 {
     align-items: center;
     justify-content: center;
     filter: drop-shadow(0 12px 20px rgba(0,0,0,0.4));
-    transition: all 0.3s ease;
+    transition: top 0.3s ease, left 0.3s ease, right 0.3s ease, bottom 0.3s ease, width 0.3s ease, height 0.3s ease, filter 0.3s ease;
     z-index: 10;
 }
 
@@ -542,17 +544,17 @@ h1 {
 .badge-container.pos-bottom-right { bottom: 8%; right: 8%; }
 
 /* Base Image Compensation - opposite corner of badge */
-.icon-canvas.pos-top-left .base-bg { bottom: 4%; right: 4%; }
-.icon-canvas.pos-top-right .base-bg { bottom: 4%; left: 4%; }
-.icon-canvas.pos-bottom-left .base-bg { top: 4%; right: 4%; }
-.icon-canvas.pos-bottom-right .base-bg { top: 4%; left: 4%; }
+.icon-canvas.pos-top-left .base-bg { bottom: var(--base-nudge); right: var(--base-nudge); }
+.icon-canvas.pos-top-right .base-bg { bottom: var(--base-nudge); left: var(--base-nudge); }
+.icon-canvas.pos-bottom-left .base-bg { top: var(--base-nudge); right: var(--base-nudge); }
+.icon-canvas.pos-bottom-right .base-bg { top: var(--base-nudge); left: var(--base-nudge); }
 
 .badge-shape {
     position: absolute;
     width: 100%;
     height: 100%;
     background-color: var(--accent);
-    transition: all 0.3s ease;
+    transition: border-radius 0.3s ease, background-color 0.3s ease, clip-path 0.3s ease;
 }
 
 .badge-shape.circle { border-radius: 50%; }
@@ -648,6 +650,11 @@ h1 {
         zoom: 1 !important;
         background: transparent;
         box-shadow: none;
+    }
+
+    body.loaded .controls-section.entrance-animate {
+        animation: fadeInUp 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+        animation-delay: calc(var(--entrance-index) * 0.1s + 0.3s);
     }
 }
 
@@ -1121,7 +1128,7 @@ button.secondary:hover {
     bottom: calc(100% + 10px);
     left: 50%;
     transform: translateX(-50%) translateY(10px);
-    background: rgba(30, 41, 59, 0.95);
+    background: var(--panel-bg);
     backdrop-filter: blur(16px);
     border: 1px solid var(--glass-border);
     border-radius: 12px;
@@ -1134,7 +1141,7 @@ button.secondary:hover {
     opacity: 0;
     visibility: hidden;
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    box-shadow: 0 10px 30px var(--shadow-color);
 }
 
 .share-wrapper:hover .share-menu,
@@ -1151,13 +1158,13 @@ button.secondary:hover {
     left: 50%;
     transform: translateX(-50%);
     border: 6px solid transparent;
-    border-top-color: rgba(30, 41, 59, 0.95);
+    border-top-color: var(--panel-bg);
 }
 
 .share-item {
     background: transparent;
     border: none;
-    color: var(--text-muted);
+    color: var(--text-main);
     padding: 0.65rem 0.75rem;
     border-radius: 8px;
     font-size: 0.85rem;
@@ -1172,8 +1179,8 @@ button.secondary:hover {
 }
 
 .share-item:hover {
-    background: rgba(255, 255, 255, 0.1);
-    color: white;
+    background: var(--control-bg-hover);
+    color: var(--text-main);
 }
 
 .share-item i {
@@ -1392,7 +1399,7 @@ button.danger:hover {
     top: 2rem;
     right: 2rem;
     z-index: 2000;
-    background: rgba(30, 41, 59, 0.9);
+    background: var(--panel-bg);
     backdrop-filter: blur(12px);
     border: 1px solid var(--glass-border);
     padding: 0.75rem;
@@ -1427,7 +1434,7 @@ button.danger:hover {
 }
 
 .toolbar-group label {
-    color: white;
+    color: var(--text-main);
     font-size: 0.85rem;
     margin: 0;
     text-transform: none;
@@ -1437,9 +1444,9 @@ button.danger:hover {
 .toolbar-btn {
     background: transparent;
     border: none;
-    color: white;
+    color: var(--text-main);
     padding: 0.6rem 1.25rem;
-    border-radius: 50px;
+    border-radius: 12px;
     cursor: pointer;
     font-size: 0.85rem;
     font-weight: 500;
@@ -1451,6 +1458,13 @@ button.danger:hover {
 
 .toolbar-btn.btn-export {
     background: var(--accent);
+    background: linear-gradient(135deg, var(--accent), #8b5cf6);
+    color: white;
+    font-weight: 700;
+    font-size: 0.95rem;
+    padding: 0.85rem 1.5rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
 }
 
 .toolbar-btn:hover {
@@ -1458,8 +1472,26 @@ button.danger:hover {
     transform: translateY(-1px);
 }
 
+.toolbar-btn.btn-export:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+    filter: brightness(1.1);
+}
+
 .toolbar-btn.secondary {
-    background: rgba(255,255,255,0.1);
+    background: var(--control-bg);
+}
+
+[data-theme="light"] .toolbar-btn.secondary {
+    background: rgba(0, 0, 0, 0.05);
+}
+
+.toolbar-btn.secondary:hover {
+    background: var(--control-bg-hover);
+}
+
+[data-theme="light"] .toolbar-btn.secondary:hover {
+    background: rgba(0, 0, 0, 0.08);
 }
 
 .screenshot-mode {
@@ -1740,9 +1772,6 @@ input[type="range"] {
         display: flex;
         flex-direction: column;
         gap: 1.25rem;
-        padding-bottom: 1.5rem;
-        border-bottom: 1px solid var(--glass-border);
-        margin-bottom: 1rem;
     }
 
     .drawer-scroll-area {
@@ -1817,4 +1846,59 @@ input[type="range"] {
 
 @keyframes export-spin {
     to { transform: rotate(360deg); }
+}
+/* --- Screenshot Mode --- */
+/* Force white background for clean screenshots */
+body.screenshot-mode {
+    background-image: none !important;
+    background-color: #ffffff !important;
+}
+
+body.screenshot-mode .container {
+    background-color: #ffffff !important;
+    transition: grid-template-columns 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@media (min-width: 1151px) {
+    body.screenshot-mode .container {
+        grid-template-columns: 1fr 0 0;
+    }
+    
+    body.screenshot-mode .controls-section {
+        opacity: 0;
+        pointer-events: none;
+        overflow: hidden;
+        border: none;
+        padding: 0;
+        margin: 0;
+        /* Instant hide side panels to prevent layout jumps */
+        display: none; 
+    }
+
+    body.screenshot-mode .preview-header,
+    body.screenshot-mode .preview-actions,
+    body.screenshot-mode .mobile-divider {
+        opacity: 0;
+        pointer-events: none;
+    }
+
+    /* Zoom the canvas for focus */
+    body.screenshot-mode .icon-canvas-wrapper {
+        transform: scale(1.1);
+        background: transparent;
+        border: none;
+        box-shadow: none;
+    }
+}
+
+/* Stable Icon Canvas */
+/* Disable ALL transitions on icon elements during screenshot mode to prevent "ghosting" or "flying" parts */
+body.screenshot-mode .icon-canvas *,
+body.screenshot-mode .base-bg,
+body.screenshot-mode .badge-container {
+    transition: none !important;
+}
+
+.icon-canvas-wrapper {
+    transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
