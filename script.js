@@ -87,6 +87,7 @@ function syncStateToURL() {
         params.delete('img');
     }
 
+    const shareUrl = `${window.location.origin}/s/?${params.toString()}`;
     const newSearch = params.toString();
     const newUrl = window.location.pathname + (newSearch ? '?' + newSearch : '');
     
@@ -1188,7 +1189,12 @@ async function copyURL() {
     const originalContent = btn.innerHTML;
     
     try {
-        await navigator.clipboard.writeText(window.location.href);
+        let url = window.location.href;
+        if (window.location.search) {
+            // Use /s/ for the share preview to bypass Cloudflare's static cache
+            url = window.location.origin + '/s/' + window.location.search;
+        }
+        await navigator.clipboard.writeText(url);
         
         // Success state
         btn.innerHTML = '<i data-lucide="check" style="width:18px;height:18px"></i> Copied!';
