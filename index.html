@@ -242,7 +242,7 @@
 
                         <div class="control-group">
                             <label>Base Effects</label>
-                            <div class="shape-grid" style="grid-template-columns: repeat(3, 1fr);">
+                            <div class="shape-grid effects-grid">
                                 <button class="shape-btn shape-btn-sm" id="effect-noise" onclick="toggleBaseEffect('noise')">Noise</button>
                                 <button class="shape-btn shape-btn-sm" id="effect-glow" onclick="toggleBaseEffect('glow')">Glow</button>
                                 <button class="shape-btn shape-btn-sm" id="effect-vignette" onclick="toggleBaseEffect('vignette')">Vignette</button>
@@ -340,7 +340,7 @@
                 </div>
             </div>
 
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 0.5rem; padding-top: 1rem; border-top: 1px solid var(--glass-border);">
+            <div class="controls-footer" style="display: flex; justify-content: space-between; align-items: center; margin-top: 0.5rem; padding-top: 1rem; border-top: 1px solid var(--glass-border);">
                 <div style="display: flex; align-items: center; gap: 0.5rem;">
                     <input type="checkbox" id="shadow-toggle" checked onchange="toggleShadows(this.checked)" style="width: 16px; height: 16px; accent-color: var(--accent); cursor: pointer;">
                     <label for="shadow-toggle" style="margin: 0; cursor: pointer; text-transform: none; font-size: 0.75rem; color: var(--text-muted);">Show Shadows</label>

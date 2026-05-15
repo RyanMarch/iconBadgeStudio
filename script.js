@@ -218,15 +218,16 @@ function setupStickyMobilePreview() {
         },
         { 
             threshold: [1],
-            rootMargin: '-85px 0px 0px 0px' // Matches the -5.25rem top in CSS
+            rootMargin: '-80px 0px 0px 0px' // Matches the -5rem top in CSS
         }
     );
     const previewSection = document.querySelector('.preview-section');
     if (previewSection) observer.observe(previewSection);
 
     window.addEventListener('scroll', () => {
-        if (window.innerWidth > 1150 || document.body.classList.contains('screenshot-mode')) {
-            // Reset variables if not in mobile/normal mode
+        const isLandscapeMobile = window.innerWidth > window.innerHeight && window.innerHeight < 500;
+        if (window.innerWidth > 1150 || isLandscapeMobile || document.body.classList.contains('screenshot-mode')) {
+            // Reset variables if not in mobile/normal mode or if in landscape mobile
             document.documentElement.style.removeProperty('--sticky-scale');
             document.documentElement.style.removeProperty('--sticky-opacity');
             document.documentElement.style.removeProperty('--sticky-pointer');
@@ -263,7 +264,8 @@ function setupStickyMobilePreview() {
         const actionsM = factor > 0.6 ? 0 : 0.5 * (1 - factor * 1.6);
         
         // Adjust margin to collapse the space taken by the scaled-down canvas
-        const margin = - (factor * 48); 
+        // Using 40% instead of 48% to leave breathing room and avoid clipping
+        const margin = - (factor * 40); 
         
         document.documentElement.style.setProperty('--sticky-scale', scale);
         document.documentElement.style.setProperty('--sticky-opacity', Math.max(0, opacity));
@@ -274,9 +276,9 @@ function setupStickyMobilePreview() {
         document.documentElement.style.setProperty('--sticky-actions-h', `${actionsH}px`);
         document.documentElement.style.setProperty('--sticky-actions-m', `${actionsM}rem`);
         
-        // Refined padding logic: Keep title spaced but collapse bottom when stuck
-        const paddingTop = 1.5;
-        const paddingBottom = 1.5 - (factor * 0.75);
+        // Keep top padding consistent but tighten the bottom
+        const paddingTop = 2.25;
+        const paddingBottom = 2.25 - (factor * 1.25); 
         
         const preview = document.querySelector('.preview-section');
         if (preview) {
@@ -306,13 +308,19 @@ function updateAppScale() {
     }
 
     // Full-screen desktop scaling: focuses on content density with 600px canvas
-    const targetWidth = 1500; 
+    const targetWidth = 1400; 
     let scale = window.innerWidth / targetWidth;
     
     // Clamp scale: keep UI comfortable and readable
-    scale = Math.min(Math.max(scale, 0.8), 1.15);
+    scale = Math.min(Math.max(scale, 0.75), 1.25);
     
     document.documentElement.style.setProperty('--app-scale', scale);
+    
+    // Ensure text and badges scale correctly on resize now that we use px-based font sizing
+    updateBasePreview();
+    if (state.icon && !document.querySelector('#badge-icon-target svg')) {
+        setIcon(state.icon, false);
+    }
 }
 
 let ALL_ICONS = [];
@@ -678,27 +686,32 @@ function updateBasePreview() {
         textEl.innerText = textToShow;
         textEl.style.color = state.baseTextColor;
         
-        // Font size scaling: Now using Container-relative units (cqw) for perfect fluid scaling
+        // Font size scaling: Now using pixel calculation for stability across browsers/zoom levels
+        const canvas = document.getElementById('icon-canvas');
+        const canvasWidth = canvas ? canvas.offsetWidth : 320;
         const textLength = textToShow.length;
         const words = textToShow.split(/\s+/);
         const longestWordLength = Math.max(...words.map(w => w.length));
         
         // charFactor determines how "tightly" we fit the characters.
-        const charFactor = 0.8; 
+        const charFactor = 0.85; 
         
-        // Calculate font size as a percentage of the container width (cqw)
-        // A font-size of 25cqw is roughly equivalent to the old 80px on a 320px canvas
-        let fontSize = Math.min(25, 25 / (longestWordLength * charFactor / 4));
-        const maxTotalFontSize = (25 * 3.5) / (textLength * charFactor / 4);
-        fontSize = Math.min(fontSize, maxTotalFontSize);
+        // Calculate font size as a percentage of the container width
+        // A base of 20 is more balanced for icon design than the previous 25
+        let fontSizeBase = Math.min(20, 20 / (longestWordLength * charFactor / 4));
+        const maxTotalFontSize = (20 * 3.5) / (textLength * charFactor / 4);
+        fontSizeBase = Math.min(fontSizeBase, maxTotalFontSize);
         
         // Scale by the user's baseSize setting
-        fontSize = fontSize * (state.baseSize / 80);
+        fontSizeBase = fontSizeBase * (state.baseSize / 80);
         
-        // Minimum legible size in container units
-        if (fontSize < 4) fontSize = 4;
+        // Minimum legible size
+        if (fontSizeBase < 4) fontSizeBase = 4;
         
-        textEl.style.fontSize = fontSize + 'cqw';
+        // Convert percentage to actual pixels
+        const fontSizePx = (fontSizeBase * canvasWidth) / 100;
+        
+        textEl.style.fontSize = fontSizePx + 'px';
         textEl.style.lineHeight = '0.95';
         
         const shadow = state.showShadows ? '0 10px 15px rgba(0,0,0,0.3)' : 'none';
@@ -1127,7 +1140,9 @@ function setIcon(name, shouldHideDropdown = true) {
             if (fontSize < 2) fontSize = 2;
         }
         
-        span.style.fontSize = fontSize + 'cqw';
+        const canvas = document.getElementById('icon-canvas');
+        const canvasWidth = canvas ? canvas.offsetWidth : 320;
+        span.style.fontSize = (fontSize * canvasWidth / 100) + 'px';
         span.style.whiteSpace = 'normal';
         span.style.wordBreak = name.includes(' ') ? 'normal' : 'break-all';
     }
