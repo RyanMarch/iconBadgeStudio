@@ -91,11 +91,7 @@ function syncStateToURL() {
     const newSearch = params.toString();
     const newUrl = window.location.pathname + (newSearch ? '?' + newSearch : '');
     
-    // Toggle Copy URL button visibility
-    const copyBtn = document.getElementById('copy-url-btn');
-    if (copyBtn) {
-        copyBtn.style.display = newSearch ? 'flex' : 'none';
-    }
+    // Share button is now always visible via HTML
 
     if (window.location.search !== (newSearch ? '?' + newSearch : '')) {
         window.history.replaceState({}, '', newUrl);
@@ -196,6 +192,94 @@ function init() {
             }
         });
     }
+
+    // Setup Drag and Drop + Paste
+    setupDragAndDrop();
+    setupPaste();
+
+    // Sticky Mobile Preview logic
+    setupStickyMobilePreview();
+}
+
+function setupStickyMobilePreview() {
+    const canvas = document.querySelector('.icon-canvas-wrapper');
+    const header = document.querySelector('.preview-header');
+    const actions = document.querySelector('.preview-actions');
+    if (!canvas) return;
+
+    // Use IntersectionObserver to toggle a class when the element becomes stuck
+    const observer = new IntersectionObserver(
+        ([e]) => {
+            e.target.classList.toggle('is-stuck', e.intersectionRatio < 1);
+        },
+        { 
+            threshold: [1],
+            rootMargin: '-85px 0px 0px 0px' // Matches the -5.25rem top in CSS
+        }
+    );
+    const previewSection = document.querySelector('.preview-section');
+    if (previewSection) observer.observe(previewSection);
+
+    window.addEventListener('scroll', () => {
+        if (window.innerWidth > 1150 || document.body.classList.contains('screenshot-mode')) {
+            // Reset variables if not in mobile/normal mode
+            document.documentElement.style.removeProperty('--sticky-scale');
+            document.documentElement.style.removeProperty('--sticky-opacity');
+            document.documentElement.style.removeProperty('--sticky-pointer');
+            document.documentElement.style.removeProperty('--sticky-margin');
+            document.documentElement.style.removeProperty('--sticky-actions-h');
+            document.documentElement.style.removeProperty('--sticky-actions-m');
+            
+            const p = document.querySelector('.preview-section');
+            if (p) {
+                p.classList.remove('is-stuck');
+                p.style.paddingTop = '';
+                p.style.paddingBottom = '';
+            }
+            return;
+        }
+        
+        const scrollY = window.scrollY;
+        
+        // With the header scrolling off, we start scaling as it disappears
+        const startScroll = 50; 
+        
+        const activeScroll = Math.max(0, scrollY - startScroll);
+        const maxScroll = 120; 
+        
+        // Calculate factor (0 to 1)
+        const factor = Math.min(1, activeScroll / maxScroll);
+        
+        // Target values: scale from 1.0 to 0.6
+        const scale = 1 - (factor * 0.4);
+        const opacity = 1 - (factor * 2.5); // Fade out actions very quickly
+        
+        // ONLY collapse the actions area
+        const actionsH = factor > 0.6 ? 0 : 200 * (1 - factor * 1.6);
+        const actionsM = factor > 0.6 ? 0 : 0.5 * (1 - factor * 1.6);
+        
+        // Adjust margin to collapse the space taken by the scaled-down canvas
+        const margin = - (factor * 48); 
+        
+        document.documentElement.style.setProperty('--sticky-scale', scale);
+        document.documentElement.style.setProperty('--sticky-opacity', Math.max(0, opacity));
+        document.documentElement.style.setProperty('--sticky-pointer', opacity < 0.1 ? 'none' : 'all');
+        document.documentElement.style.setProperty('--sticky-margin', `${margin}%`);
+        
+        // Actions collapse
+        document.documentElement.style.setProperty('--sticky-actions-h', `${actionsH}px`);
+        document.documentElement.style.setProperty('--sticky-actions-m', `${actionsM}rem`);
+        
+        // Refined padding logic: Keep title spaced but collapse bottom when stuck
+        const paddingTop = 1.5;
+        const paddingBottom = 1.5 - (factor * 0.75);
+        
+        const preview = document.querySelector('.preview-section');
+        if (preview) {
+            preview.style.paddingTop = `${paddingTop}rem`;
+            preview.style.paddingBottom = `${paddingBottom}rem`;
+        }
+    }, { passive: true });
 }
 
 function updateAppScale() {
@@ -671,77 +755,182 @@ function updateBaseIconFilter() {
     }
 }
 
+// Helper to generate a unique hash for a file (Content-Addressable Storage)
+async function getFileHash(file) {
+    const arrayBuffer = await file.arrayBuffer();
+    const hashBuffer = await crypto.subtle.digest('SHA-1', arrayBuffer);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+// Helper to resize image if it exceeds max dimensions
+async function resizeImage(file, maxSize) {
+    return new Promise((resolve, reject) => {
+        const img = new Image();
+        const objectUrl = URL.createObjectURL(file);
+        
+        // Safety timeout (10 seconds)
+        const timeout = setTimeout(() => {
+            URL.revokeObjectURL(objectUrl);
+            reject(new Error('Image processing timed out.'));
+        }, 10000);
+
+        img.onload = () => {
+            clearTimeout(timeout);
+            URL.revokeObjectURL(objectUrl);
+            let width = img.width;
+            let height = img.height;
+
+            if (width <= maxSize && height <= maxSize) {
+                resolve(file); // No resizing needed
+                return;
+            }
+
+            if (width > height) {
+                height = Math.round((height * maxSize) / width);
+                width = maxSize;
+            } else {
+                width = Math.round((width * maxSize) / height);
+                height = maxSize;
+            }
+
+            const canvas = document.createElement('canvas');
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            
+            ctx.imageSmoothingEnabled = true;
+            ctx.imageSmoothingQuality = 'high';
+            ctx.drawImage(img, 0, 0, width, height);
+
+            const mimeType = file.type || 'image/jpeg';
+            canvas.toBlob((blob) => {
+                if (!blob) {
+                    reject(new Error('Image optimization failed.'));
+                    return;
+                }
+                const resizedFile = new File([blob], file.name, {
+                    type: mimeType,
+                    lastModified: Date.now()
+                });
+                resolve(resizedFile);
+            }, mimeType, 0.92);
+        };
+
+        img.onerror = () => {
+            clearTimeout(timeout);
+            URL.revokeObjectURL(objectUrl);
+            reject(new Error('Could not read image file. It may be corrupt or not an image.'));
+        };
+        img.src = objectUrl;
+    });
+}
+
 async function handleBaseIconUpload(event) {
     const file = event.target.files[0];
-    if (!file) return;
+    if (file) {
+        await processImageUpload(file);
+    }
+    event.target.value = ''; // Clear for re-selection
+}
 
-    // 1. Strict File Size Check (4MB)
-    if (file.size > 4 * 1024 * 1024) {
-        alert('Image is too large (max 4MB). Please choose a smaller file.');
+async function processImageUpload(file) {
+    if (!file || !file.type.startsWith('image/')) {
+        alert('Please select a valid image file.');
         return;
     }
-
-    // 2. Dimension Check (max 1500px)
-    const imgLoader = new Image();
-    const objectUrl = URL.createObjectURL(file);
-    
-    try {
-        await new Promise((resolve, reject) => {
-            imgLoader.onload = () => {
-                if (imgLoader.width > 1500 || imgLoader.height > 1500) {
-                    reject(`Image dimensions are too large (${imgLoader.width}x${imgLoader.height}). Max allowed is 1500px on the longest side.`);
-                }
-                resolve();
-            };
-            imgLoader.onerror = () => reject('Could not read image file.');
-            imgLoader.src = objectUrl;
-        });
-    } catch (error) {
-        alert(error);
-        URL.revokeObjectURL(objectUrl);
-        return;
-    }
-    URL.revokeObjectURL(objectUrl);
 
     const overlay = document.getElementById('loading-overlay');
+    const loadingText = document.getElementById('loading-text');
     if (overlay) overlay.classList.add('visible');
-
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('upload_preset', 'iconStudio');
-    formData.append('folder', 'User Uploads - Icon Studio');
+    if (loadingText) loadingText.innerText = 'Processing Image...';
 
     try {
+        // 1. Instant Local Preview (Fastest response)
+        // Cleanup previous blob URL if exists
+        if (state.customBaseIcon && state.customBaseIcon.startsWith('blob:')) {
+            URL.revokeObjectURL(state.customBaseIcon);
+        }
+
+        const localUrl = URL.createObjectURL(file);
+        state.customBaseIcon = localUrl;
+        const imgEl = document.getElementById('base-img');
+        if (imgEl) imgEl.src = localUrl;
+        updateBaseControls();
+        updateBasePreview();
+
+        // 2. Auto-resize (Optimization)
+        const optimizedFile = await resizeImage(file, 1500);
+
+        // 3. File Size Check (4MB)
+        if (optimizedFile.size > 4 * 1024 * 1024) {
+            throw new Error('Image is too large (max 4MB after optimization).');
+        }
+
+        // Update local preview with the optimized one if it changed
+        if (optimizedFile !== file) {
+            const optimizedUrl = URL.createObjectURL(optimizedFile);
+            // Cleanup the unoptimized localUrl
+            URL.revokeObjectURL(localUrl);
+            
+            state.customBaseIcon = optimizedUrl;
+            if (imgEl) imgEl.src = optimizedUrl;
+        }
+
+        if (loadingText) loadingText.innerText = 'Uploading to Cloud...';
+
+        // 4. Generate content hash for deduplication
+        const fileHash = await getFileHash(optimizedFile);
+        
+        const formData = new FormData();
+        formData.append('file', optimizedFile);
+        formData.append('upload_preset', 'iconStudio');
+        formData.append('public_id', fileHash);
+        formData.append('folder', 'User Uploads - Icon Studio');
+
         const response = await fetch('https://api.cloudinary.com/v1_1/rm20abcd26/image/upload', {
             method: 'POST',
             body: formData
         });
         
-        if (!response.ok) throw new Error('Cloudinary limit reached or error');
-        
-        const data = await response.json();
-        const imageUrl = data.secure_url;
+        let imageUrl;
+        if (!response.ok) {
+            let errorData;
+            try { errorData = await response.json(); } catch(e) { errorData = {}; }
+            
+            if (errorData.error && errorData.error.message && errorData.error.message.includes('already exists')) {
+                const ext = optimizedFile.name.split('.').pop() || 'png';
+                imageUrl = `https://res.cloudinary.com/rm20abcd26/image/upload/v1/User%20Uploads%20-%20Icon%20Studio/${fileHash}.${ext}`;
+            } else {
+                throw new Error('Cloud storage unavailable.');
+            }
+        } else {
+            const data = await response.json();
+            imageUrl = data.secure_url;
+        }
 
+        // 5. Final Cloud URL Update
         state.customBaseIcon = imageUrl;
-        const imgEl = document.getElementById('base-img');
-        imgEl.src = imageUrl;
+        if (imgEl) imgEl.src = imageUrl;
         localStorage.setItem('iconStudio_baseIcon', imageUrl);
+
     } catch (err) {
-        console.warn('Cloudinary upload failed, falling back to local storage:', err);
-        alert('Cloud upload failed (sharing will be disabled). Saving locally instead...');
+        console.warn('Upload failed, staying with local copy:', err);
         
-        // Fallback: Read as DataURL
-        const reader = new FileReader();
-        await new Promise((resolve) => {
-            reader.onload = (e) => {
-                const dataUrl = e.target.result;
-                state.customBaseIcon = dataUrl;
-                document.getElementById('base-img').src = dataUrl;
-                localStorage.setItem('iconStudio_baseIcon', dataUrl);
-                resolve();
-            };
-            reader.readAsDataURL(file);
-        });
+        // If we have a local preview, we're mostly okay, just alert the user about sharing
+        if (state.customBaseIcon && state.customBaseIcon.startsWith('blob:')) {
+            alert('Cloud upload failed. Your icon will be visible locally, but sharing via URL will be disabled.');
+            // Save to localStorage as DataURL since Blob URLs don't persist sessions
+            try {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    localStorage.setItem('iconStudio_baseIcon', e.target.result);
+                };
+                reader.readAsDataURL(file);
+            } catch(e) {}
+        } else {
+            alert('Could not process this image. Please try another file.');
+        }
     } finally {
         if (overlay) overlay.classList.remove('visible');
         updateRemoveButtonVisibility();
@@ -751,13 +940,72 @@ async function handleBaseIconUpload(event) {
     }
 }
 
+function setupDragAndDrop() {
+    const dropZone = document.getElementById('capture-area');
+    if (!dropZone) return;
+
+    let dragCounter = 0;
+
+    // 1. Prevent default browser behavior everywhere
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        window.addEventListener(eventName, (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+        }, false);
+    });
+
+    // 2. Visual feedback on capture-area when dragging anywhere over the window
+    window.addEventListener('dragenter', (e) => {
+        dragCounter++;
+        if (dragCounter === 1) {
+            dropZone.classList.add('dragging');
+        }
+    });
+
+    window.addEventListener('dragleave', (e) => {
+        dragCounter--;
+        if (dragCounter <= 0) {
+            dragCounter = 0;
+            dropZone.classList.remove('dragging');
+        }
+    });
+
+    // 3. Handle drop anywhere
+    window.addEventListener('drop', (e) => {
+        dragCounter = 0;
+        dropZone.classList.remove('dragging');
+        
+        const file = e.dataTransfer.files[0];
+        if (file) processImageUpload(file);
+    }, false);
+}
+
+function setupPaste() {
+    window.addEventListener('paste', (e) => {
+        const items = e.clipboardData.items;
+        for (let i = 0; i < items.length; i++) {
+            if (items[i].type.indexOf('image') !== -1) {
+                const file = items[i].getAsFile();
+                processImageUpload(file);
+                break;
+            }
+        }
+    });
+}
+
 function resetBaseIcon() {
     state.customBaseIcon = null;
     localStorage.removeItem('iconStudio_baseIcon');
     const uploadInput = document.getElementById('base-icon-upload');
     if (uploadInput) uploadInput.value = '';
     
-    setBaseColor1('#5E007F');
+    // Restore default base background and zoom
+    setBaseColor1(APP_CONFIG.baseColor.default);
+    setBaseColor2(APP_CONFIG.baseColor2.default);
+    setBaseImageZoom(APP_CONFIG.baseZoom.default);
+    setBaseGradientType(APP_CONFIG.gradientType.default);
+    setBaseGradientAngle(APP_CONFIG.gradientAngle.default);
+    
     updateRemoveButtonVisibility();
     updateBaseControls();
     updateBasePreview();
@@ -872,6 +1120,10 @@ function setBaseSize(v) {
     if (bg) {
         bg.style.width = v + '%';
         bg.style.height = v + '%';
+        
+        // Dynamic nudge: ensure (size + nudge) <= 100% to prevent overflow
+        const nudge = Math.max(0, Math.min(4, 100 - v));
+        document.documentElement.style.setProperty('--base-nudge', nudge + '%');
     }
     updateBasePreview();
     syncStateToURL();
@@ -977,42 +1229,77 @@ function toggleScreenshotMode() {
 
 async function exportPNG() {
     const captureArea = document.getElementById('capture-area');
-    const btn = document.querySelector('button.primary');
+    const btn = document.querySelector('.btn-export');
     const originalText = btn.innerHTML;
     
-    btn.innerHTML = 'Generating...';
+    // 1. Show the Loading Overlay
+    let overlay = document.getElementById('export-overlay');
+    if (!overlay) {
+        overlay = document.createElement('div');
+        overlay.id = 'export-overlay';
+        overlay.className = 'export-loading-overlay';
+        overlay.innerHTML = `
+            <div class="export-spinner"></div>
+            <div class="export-text">Polishing your icon...</div>
+        `;
+        document.body.appendChild(overlay);
+    }
+    overlay.classList.add('active');
+    
     btn.disabled = true;
 
-    // Enter screenshot mode temporarily to hide UI elements and background styles
-    document.body.classList.add('screenshot-mode');
+    // 2. Create a "Clean Room" for total isolation
+    const cleanRoom = document.createElement('div');
+    cleanRoom.style.cssText = `
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        width: 1024px !important;
+        height: 1024px !important;
+        z-index: 999999 !important; /* One level below overlay */
+        background: transparent !important;
+        overflow: visible !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        pointer-events: none !important;
+        opacity: 1 !important;
+    `;
+
+    // 3. Clone the icon and scale it to fit the 1024px room
+    const clone = captureArea.cloneNode(true);
+    const scale = 1024 / captureArea.offsetWidth;
+    
+    clone.style.cssText = `
+        transform: scale(${scale}) !important;
+        transform-origin: center center !important;
+        width: ${captureArea.offsetWidth}px !important;
+        height: ${captureArea.offsetHeight}px !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        background: transparent !important;
+        border: none !important;
+        border-radius: 0 !important;
+        box-shadow: none !important;
+        overflow: visible !important;
+    `;
+
+    cleanRoom.appendChild(clone);
+    document.body.appendChild(cleanRoom);
 
     try {
-        // Ensure images are loaded and wait for any layout shifts
-        const images = captureArea.querySelectorAll('img');
+        // Ensure images are loaded inside the clone
+        const images = clone.querySelectorAll('img');
         await Promise.all(Array.from(images).map(img => {
             if (img.complete) return Promise.resolve();
             return new Promise(resolve => { img.onload = resolve; img.onerror = resolve; });
         }));
 
-        // Tiny delay for screenshot mode styles to settle
-        await new Promise(r => setTimeout(r, 200));
+        // 4. Wait for browser to render the clean room
+        await new Promise(r => setTimeout(r, 600));
 
-        // First capture to "prime" the browser
-        await domtoimage.toPng(captureArea, {
-            width: 1024,
-            height: 1024,
-            cacheBust: true,
-            style: {
-                transform: 'scale(1)',
-                left: '0',
-                top: '0',
-                margin: '0',
-                display: 'flex'
-            }
-        });
-
-        // Second capture for the actual file
-        const finalUrl = await domtoimage.toPng(captureArea, {
+        // 5. Capture the isolated room
+        const dataUrl = await domtoimage.toPng(cleanRoom, {
             width: 1024,
             height: 1024,
             cacheBust: true
@@ -1020,32 +1307,40 @@ async function exportPNG() {
 
         const link = document.createElement('a');
         link.download = `icon-${state.icon}-${state.shape}.png`;
-        link.href = finalUrl;
+        link.href = dataUrl;
         link.click();
+
     } catch (err) {
         console.error('Export failed:', err);
         alert('Export failed. Try taking a manual screenshot.');
     } finally {
-        // Exit screenshot mode
-        document.body.classList.remove('screenshot-mode');
-        btn.innerHTML = originalText;
+        // 6. Cleanup
+        if (cleanRoom.parentNode) document.body.removeChild(cleanRoom);
+        overlay.classList.remove('active');
         btn.disabled = false;
     }
 }
 
-async function copyURL() {
-    const btn = document.getElementById('copy-url-btn');
+async function handleShareClick() {
+    // On mobile, trigger native share immediately
+    if (window.innerWidth <= 1150) {
+        await nativeShareOnly();
+    }
+}
+
+async function copyURLOnly() {
+    const btn = document.getElementById('share-btn');
     const originalContent = btn.innerHTML;
     
+    let url = window.location.href;
+    if (window.location.search) {
+        url = window.location.origin + '/s/' + window.location.search;
+    }
+
     try {
-        let url = window.location.href;
-        if (window.location.search) {
-            // Use /s/ for the share preview to bypass Cloudflare's static cache
-            url = window.location.origin + '/s/' + window.location.search;
-        }
         await navigator.clipboard.writeText(url);
         
-        // Success state
+        // Visual feedback on the main button
         btn.innerHTML = '<i data-lucide="check" style="width:18px;height:18px"></i> Copied!';
         btn.classList.add('success');
         lucide.createIcons();
@@ -1058,6 +1353,32 @@ async function copyURL() {
     } catch (err) {
         console.error('Failed to copy:', err);
         alert('Failed to copy URL to clipboard.');
+    }
+}
+
+async function nativeShareOnly() {
+    let url = window.location.href;
+    if (window.location.search) {
+        url = window.location.origin + '/s/' + window.location.search;
+    }
+
+    if (navigator.share) {
+        try {
+            await navigator.share({
+                title: 'Check out my icon design!',
+                text: 'I designed this icon using Icon Studio.',
+                url: url
+            });
+        } catch (err) {
+            if (err.name !== 'AbortError') {
+                console.error('Native share failed:', err);
+                // Fallback to copy if native share fails for some other reason
+                await copyURLOnly();
+            }
+        }
+    } else {
+        // Fallback for desktop browsers that don't support navigator.share
+        await copyURLOnly();
     }
 }
 

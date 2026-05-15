@@ -1,0 +1,14 @@
+{
+  "name": "iconstudio",
+  "version": "1.1.0",
+  "description": "Icon Studio - Premium Icon Generator",
+  "main": "script.js",
+  "scripts": {
+    "build": "mkdir -p dist && cp index.html share-template.html dist/ && cp -r assets dist/ && esbuild script.js --minify --outfile=dist/script.js && esbuild style.css --minify --outfile=dist/style.css",
+    "dev": "wrangler pages dev ."
+  },
+  "devDependencies": {
+    "esbuild": "^0.20.0",
+    "wrangler": "^3.0.0"
+  }
+}
