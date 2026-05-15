@@ -195,6 +195,10 @@ function init() {
             }
         });
     }
+
+    // Setup Drag and Drop + Paste
+    setupDragAndDrop();
+    setupPaste();
 }
 
 function updateAppScale() {
@@ -670,77 +674,182 @@ function updateBaseIconFilter() {
     }
 }
 
+// Helper to generate a unique hash for a file (Content-Addressable Storage)
+async function getFileHash(file) {
+    const arrayBuffer = await file.arrayBuffer();
+    const hashBuffer = await crypto.subtle.digest('SHA-1', arrayBuffer);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+// Helper to resize image if it exceeds max dimensions
+async function resizeImage(file, maxSize) {
+    return new Promise((resolve, reject) => {
+        const img = new Image();
+        const objectUrl = URL.createObjectURL(file);
+        
+        // Safety timeout (10 seconds)
+        const timeout = setTimeout(() => {
+            URL.revokeObjectURL(objectUrl);
+            reject(new Error('Image processing timed out.'));
+        }, 10000);
+
+        img.onload = () => {
+            clearTimeout(timeout);
+            URL.revokeObjectURL(objectUrl);
+            let width = img.width;
+            let height = img.height;
+
+            if (width <= maxSize && height <= maxSize) {
+                resolve(file); // No resizing needed
+                return;
+            }
+
+            if (width > height) {
+                height = Math.round((height * maxSize) / width);
+                width = maxSize;
+            } else {
+                width = Math.round((width * maxSize) / height);
+                height = maxSize;
+            }
+
+            const canvas = document.createElement('canvas');
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            
+            ctx.imageSmoothingEnabled = true;
+            ctx.imageSmoothingQuality = 'high';
+            ctx.drawImage(img, 0, 0, width, height);
+
+            const mimeType = file.type || 'image/jpeg';
+            canvas.toBlob((blob) => {
+                if (!blob) {
+                    reject(new Error('Image optimization failed.'));
+                    return;
+                }
+                const resizedFile = new File([blob], file.name, {
+                    type: mimeType,
+                    lastModified: Date.now()
+                });
+                resolve(resizedFile);
+            }, mimeType, 0.92);
+        };
+
+        img.onerror = () => {
+            clearTimeout(timeout);
+            URL.revokeObjectURL(objectUrl);
+            reject(new Error('Could not read image file. It may be corrupt or not an image.'));
+        };
+        img.src = objectUrl;
+    });
+}
+
 async function handleBaseIconUpload(event) {
     const file = event.target.files[0];
-    if (!file) return;
+    if (file) {
+        await processImageUpload(file);
+    }
+    event.target.value = ''; // Clear for re-selection
+}
 
-    // 1. Strict File Size Check (4MB)
-    if (file.size > 4 * 1024 * 1024) {
-        alert('Image is too large (max 4MB). Please choose a smaller file.');
+async function processImageUpload(file) {
+    if (!file || !file.type.startsWith('image/')) {
+        alert('Please select a valid image file.');
         return;
     }
-
-    // 2. Dimension Check (max 1500px)
-    const imgLoader = new Image();
-    const objectUrl = URL.createObjectURL(file);
-    
-    try {
-        await new Promise((resolve, reject) => {
-            imgLoader.onload = () => {
-                if (imgLoader.width > 1500 || imgLoader.height > 1500) {
-                    reject(`Image dimensions are too large (${imgLoader.width}x${imgLoader.height}). Max allowed is 1500px on the longest side.`);
-                }
-                resolve();
-            };
-            imgLoader.onerror = () => reject('Could not read image file.');
-            imgLoader.src = objectUrl;
-        });
-    } catch (error) {
-        alert(error);
-        URL.revokeObjectURL(objectUrl);
-        return;
-    }
-    URL.revokeObjectURL(objectUrl);
 
     const overlay = document.getElementById('loading-overlay');
+    const loadingText = document.getElementById('loading-text');
     if (overlay) overlay.classList.add('visible');
-
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('upload_preset', 'iconStudio');
-    formData.append('folder', 'User Uploads - Icon Studio');
+    if (loadingText) loadingText.innerText = 'Processing Image...';
 
     try {
+        // 1. Instant Local Preview (Fastest response)
+        // Cleanup previous blob URL if exists
+        if (state.customBaseIcon && state.customBaseIcon.startsWith('blob:')) {
+            URL.revokeObjectURL(state.customBaseIcon);
+        }
+
+        const localUrl = URL.createObjectURL(file);
+        state.customBaseIcon = localUrl;
+        const imgEl = document.getElementById('base-img');
+        if (imgEl) imgEl.src = localUrl;
+        updateBaseControls();
+        updateBasePreview();
+
+        // 2. Auto-resize (Optimization)
+        const optimizedFile = await resizeImage(file, 1500);
+
+        // 3. File Size Check (4MB)
+        if (optimizedFile.size > 4 * 1024 * 1024) {
+            throw new Error('Image is too large (max 4MB after optimization).');
+        }
+
+        // Update local preview with the optimized one if it changed
+        if (optimizedFile !== file) {
+            const optimizedUrl = URL.createObjectURL(optimizedFile);
+            // Cleanup the unoptimized localUrl
+            URL.revokeObjectURL(localUrl);
+            
+            state.customBaseIcon = optimizedUrl;
+            if (imgEl) imgEl.src = optimizedUrl;
+        }
+
+        if (loadingText) loadingText.innerText = 'Uploading to Cloud...';
+
+        // 4. Generate content hash for deduplication
+        const fileHash = await getFileHash(optimizedFile);
+        
+        const formData = new FormData();
+        formData.append('file', optimizedFile);
+        formData.append('upload_preset', 'iconStudio');
+        formData.append('public_id', fileHash);
+        formData.append('folder', 'User Uploads - Icon Studio');
+
         const response = await fetch('https://api.cloudinary.com/v1_1/rm20abcd26/image/upload', {
             method: 'POST',
             body: formData
         });
         
-        if (!response.ok) throw new Error('Cloudinary limit reached or error');
-        
-        const data = await response.json();
-        const imageUrl = data.secure_url;
+        let imageUrl;
+        if (!response.ok) {
+            let errorData;
+            try { errorData = await response.json(); } catch(e) { errorData = {}; }
+            
+            if (errorData.error && errorData.error.message && errorData.error.message.includes('already exists')) {
+                const ext = optimizedFile.name.split('.').pop() || 'png';
+                imageUrl = `https://res.cloudinary.com/rm20abcd26/image/upload/v1/User%20Uploads%20-%20Icon%20Studio/${fileHash}.${ext}`;
+            } else {
+                throw new Error('Cloud storage unavailable.');
+            }
+        } else {
+            const data = await response.json();
+            imageUrl = data.secure_url;
+        }
 
+        // 5. Final Cloud URL Update
         state.customBaseIcon = imageUrl;
-        const imgEl = document.getElementById('base-img');
-        imgEl.src = imageUrl;
+        if (imgEl) imgEl.src = imageUrl;
         localStorage.setItem('iconStudio_baseIcon', imageUrl);
+
     } catch (err) {
-        console.warn('Cloudinary upload failed, falling back to local storage:', err);
-        alert('Cloud upload failed (sharing will be disabled). Saving locally instead...');
+        console.warn('Upload failed, staying with local copy:', err);
         
-        // Fallback: Read as DataURL
-        const reader = new FileReader();
-        await new Promise((resolve) => {
-            reader.onload = (e) => {
-                const dataUrl = e.target.result;
-                state.customBaseIcon = dataUrl;
-                document.getElementById('base-img').src = dataUrl;
-                localStorage.setItem('iconStudio_baseIcon', dataUrl);
-                resolve();
-            };
-            reader.readAsDataURL(file);
-        });
+        // If we have a local preview, we're mostly okay, just alert the user about sharing
+        if (state.customBaseIcon && state.customBaseIcon.startsWith('blob:')) {
+            alert('Cloud upload failed. Your icon will be visible locally, but sharing via URL will be disabled.');
+            // Save to localStorage as DataURL since Blob URLs don't persist sessions
+            try {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    localStorage.setItem('iconStudio_baseIcon', e.target.result);
+                };
+                reader.readAsDataURL(file);
+            } catch(e) {}
+        } else {
+            alert('Could not process this image. Please try another file.');
+        }
     } finally {
         if (overlay) overlay.classList.remove('visible');
         updateRemoveButtonVisibility();
@@ -748,6 +857,48 @@ async function handleBaseIconUpload(event) {
         updateBasePreview();
         syncStateToURL();
     }
+}
+
+function setupDragAndDrop() {
+    const dropZone = document.getElementById('capture-area');
+    if (!dropZone) return;
+
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        dropZone.addEventListener(eventName, (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+        }, false);
+    });
+
+    ['dragenter', 'dragover'].forEach(eventName => {
+        dropZone.addEventListener(eventName, () => {
+            dropZone.classList.add('dragging');
+        }, false);
+    });
+
+    ['dragleave', 'drop'].forEach(eventName => {
+        dropZone.addEventListener(eventName, () => {
+            dropZone.classList.remove('dragging');
+        }, false);
+    });
+
+    dropZone.addEventListener('drop', (e) => {
+        const file = e.dataTransfer.files[0];
+        if (file) processImageUpload(file);
+    }, false);
+}
+
+function setupPaste() {
+    window.addEventListener('paste', (e) => {
+        const items = e.clipboardData.items;
+        for (let i = 0; i < items.length; i++) {
+            if (items[i].type.indexOf('image') !== -1) {
+                const file = items[i].getAsFile();
+                processImageUpload(file);
+                break;
+            }
+        }
+    });
 }
 
 function resetBaseIcon() {
