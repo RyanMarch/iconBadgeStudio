@@ -192,7 +192,7 @@
                             </div>
                         </div>
 
-                        <div id="base-image-controls" style="display: none;">
+                        <div id="base-image-controls" class="hidden">
                             <div class="control-group">
                                 <div class="range-header">
                                     <label>Image Zoom</label>
@@ -209,7 +209,7 @@
                             </div>
                             <div class="text-color-row" style="align-items: center;">
                                 <div class="text-input-wrapper" style="position: relative; flex: 1;">
-                                    <input type="text" id="base-text-input" placeholder="e.g. AB, 🚀, YOUR TEXT" oninput="setBaseText(this.value)" maxlength="30" style="width: 100%; padding-right: 3rem;">
+                                    <input type="text" id="base-text-input" oninput="setBaseText(this.value)" maxlength="30" style="width: 100%; padding-right: 3rem;">
                                     <span class="char-count" id="base-text-count" style="position: absolute; right: 0.75rem; top: 50%; transform: translateY(-50%); font-size: 0.7rem; opacity: 0.5; pointer-events: none;">0/30</span>
                                 </div>
                                 <div class="custom-color-wrapper rect" id="base-text-color-ui" title="Text Color" style="--swatch-color: #ffffff; margin: 0;">
@@ -272,70 +272,72 @@
                 <button class="shape-btn shape-btn-sm" data-pos="none" onclick="setBadgePosition('none')" style="width: 100%;">None</button>
             </div>
 
-            <div class="control-group">
-                <label>Badge Shape</label>
-                <div class="shape-grid-4x2">
-                    <button class="shape-btn shape-btn-sm active" data-shape="circle" onclick="setShape('circle')">Circle</button>
-                    <button class="shape-btn shape-btn-sm" data-shape="roundrect" onclick="setShape('roundrect')">RoundRect</button>
-                    <button class="shape-btn shape-btn-sm" data-shape="squircle" onclick="setShape('squircle')">Squircle</button>
-                    <button class="shape-btn shape-btn-sm" data-shape="square-hard" onclick="setShape('square-hard')">Square</button>
-                    <button class="shape-btn shape-btn-sm" data-shape="hexagon" onclick="setShape('hexagon')">Hex V</button>
-                    <button class="shape-btn shape-btn-sm" data-shape="hexagon-h" onclick="setShape('hexagon-h')">Hex H</button>
-                    <button class="shape-btn shape-btn-sm" data-shape="diamond" onclick="setShape('diamond')">Diamond</button>
-                    <button class="shape-btn shape-btn-sm" data-shape="shield" onclick="setShape('shield')">Shield</button>
-                </div>
-            </div>
-
-            <div class="control-group">
-                <label>Badge Color</label>
-                <div class="color-presets" id="color-presets">
-                    <!-- Dynamic swatches -->
-                    <div class="custom-color-wrapper" id="custom-color-ui" title="Custom Color" style="--swatch-color: #3b82f6">
-                        <i data-lucide="plus" style="color:white"></i>
-                        <input type="color" id="custom-color" value="#3b82f6" oninput="setColor(this.value)">
+            <div id="badge-settings-extra">
+                <div class="control-group">
+                    <label>Badge Shape</label>
+                    <div class="shape-grid-4x2">
+                        <button class="shape-btn shape-btn-sm active" data-shape="circle" onclick="setShape('circle')">Circle</button>
+                        <button class="shape-btn shape-btn-sm" data-shape="roundrect" onclick="setShape('roundrect')">RoundRect</button>
+                        <button class="shape-btn shape-btn-sm" data-shape="squircle" onclick="setShape('squircle')">Squircle</button>
+                        <button class="shape-btn shape-btn-sm" data-shape="square-hard" onclick="setShape('square-hard')">Square</button>
+                        <button class="shape-btn shape-btn-sm" data-shape="hexagon" onclick="setShape('hexagon')">Hex V</button>
+                        <button class="shape-btn shape-btn-sm" data-shape="hexagon-h" onclick="setShape('hexagon-h')">Hex H</button>
+                        <button class="shape-btn shape-btn-sm" data-shape="diamond" onclick="setShape('diamond')">Diamond</button>
+                        <button class="shape-btn shape-btn-sm" data-shape="shield" onclick="setShape('shield')">Shield</button>
                     </div>
                 </div>
-            </div>
 
-            <div class="control-group">
-                <label>Icon Picker (<a href="https://lucide.dev/icons" target="_blank" style="color: inherit; text-decoration: underline; text-underline-offset: 2px;">Lucide</a>)</label>
-                <div class="icon-picker-wrapper">
-                    <input type="text" id="icon-input" name="icon-search" placeholder="e.g. users, gauge, dumbbell, bell..." oninput="handleIconInput(this.value)" onfocus="showSuggestions()" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false">
-                    <div id="icon-dropdown" class="icon-dropdown"></div>
+                <div class="control-group">
+                    <label>Badge Color</label>
+                    <div class="color-presets" id="color-presets">
+                        <!-- Dynamic swatches -->
+                        <div class="custom-color-wrapper" id="custom-color-ui" title="Custom Color" style="--swatch-color: #3b82f6">
+                            <i data-lucide="plus" style="color:white"></i>
+                            <input type="color" id="custom-color" value="#3b82f6" oninput="setColor(this.value)">
+                        </div>
+                    </div>
                 </div>
-                <div class="icon-suggestions">
-                    Ex: 
-                    <span class="suggestion-tag" onclick="setIcon('dumbbell')">dumbbell</span>, 
-                    <span class="suggestion-tag" onclick="setIcon('users')">user</span>, 
-                    <span class="suggestion-tag" onclick="setIcon('gauge')">gauge</span>, 
-                    <span class="suggestion-tag" onclick="setIcon('mail')">mail</span>, 
-                    <span class="suggestion-tag" onclick="setIcon('settings')">settings</span>, 
-                    <span class="suggestion-tag" onclick="setIcon('search')">search</span>
-                </div>
-            </div>
 
-            <div class="control-group">
-                <div class="range-header">
-                    <label>Badge Size</label>
-                    <span class="range-val"><span id="badge-size-val">40</span>%</span>
+                <div class="control-group">
+                    <label>Icon Picker (<a href="https://lucide.dev/icons" target="_blank" style="color: inherit; text-decoration: underline; text-underline-offset: 2px;">Lucide</a>)</label>
+                    <div class="icon-picker-wrapper">
+                        <input type="text" id="icon-input" name="icon-search" placeholder="e.g. users, gauge, dumbbell, bell..." oninput="handleIconInput(this.value)" onfocus="showSuggestions()" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false">
+                        <div id="icon-dropdown" class="icon-dropdown"></div>
+                    </div>
+                    <div class="icon-suggestions">
+                        Ex: 
+                        <span class="suggestion-tag" onclick="setIcon('dumbbell')">dumbbell</span>, 
+                        <span class="suggestion-tag" onclick="setIcon('users')">user</span>, 
+                        <span class="suggestion-tag" onclick="setIcon('gauge')">gauge</span>, 
+                        <span class="suggestion-tag" onclick="setIcon('mail')">mail</span>, 
+                        <span class="suggestion-tag" onclick="setIcon('settings')">settings</span>, 
+                        <span class="suggestion-tag" onclick="setIcon('search')">search</span>
+                    </div>
                 </div>
-                <input type="range" id="badge-size-input" min="20" max="60" value="40" oninput="setBadgeSize(this.value)">
-            </div>
 
-            <div class="control-group">
-                <div class="range-header">
-                    <label>Badge Rotation</label>
-                    <span class="range-val"><span id="badge-rot-val">0</span>°</span>
+                <div class="control-group">
+                    <div class="range-header">
+                        <label>Badge Size</label>
+                        <span class="range-val"><span id="badge-size-val">40</span>%</span>
+                    </div>
+                    <input type="range" id="badge-size-input" min="20" max="60" value="40" oninput="setBadgeSize(this.value)">
                 </div>
-                <input type="range" id="badge-rot-input" min="0" max="360" value="0" oninput="setBadgeRotation(this.value)">
-            </div>
 
-            <div class="control-group">
-                <div class="range-header">
-                    <label>Badge Icon Scale</label>
-                    <span class="range-val"><span id="inner-scale-val">70</span>%</span>
+                <div class="control-group">
+                    <div class="range-header">
+                        <label>Badge Rotation</label>
+                        <span class="range-val"><span id="badge-rot-val">0</span>°</span>
+                    </div>
+                    <input type="range" id="badge-rot-input" min="0" max="360" value="0" oninput="setBadgeRotation(this.value)">
                 </div>
-                <input type="range" id="inner-scale-input" min="20" max="100" value="70" oninput="setInnerScale(this.value)">
+
+                <div class="control-group">
+                    <div class="range-header">
+                        <label>Badge Icon Scale</label>
+                        <span class="range-val"><span id="inner-scale-val">70</span>%</span>
+                    </div>
+                    <input type="range" id="inner-scale-input" min="20" max="100" value="70" oninput="setInnerScale(this.value)">
+                </div>
             </div>
 
             <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 0.5rem; padding-top: 1rem; border-top: 1px solid var(--glass-border);">

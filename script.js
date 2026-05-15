@@ -165,6 +165,10 @@ function init() {
     applyBaseEffects();
 
     if (state.customBaseIcon) {
+        // Clear base text if it's the default "YOUR TEXT" when an image is present
+        if (state.baseText === APP_CONFIG.baseText.default) {
+            setBaseText('');
+        }
         document.getElementById('base-img').src = state.customBaseIcon;
         document.getElementById('remove-base-icon').style.display = 'flex';
     }
@@ -446,12 +450,12 @@ function updateRemoveButtonVisibility() {
 }
 
 function updateBaseControls() {
-    const hasImage = !!state.customBaseIcon;
-    const gradControls = document.getElementById('base-gradient-controls');
+    const hasCustomIcon = !!state.customBaseIcon;
+    const gradientControls = document.getElementById('base-gradient-controls');
     const imageControls = document.getElementById('base-image-controls');
     
-    if (gradControls) gradControls.style.display = hasImage ? 'none' : 'block';
-    if (imageControls) imageControls.style.display = hasImage ? 'block' : 'none';
+    if (gradientControls) gradientControls.classList.toggle('hidden', hasCustomIcon);
+    if (imageControls) imageControls.classList.toggle('hidden', !hasCustomIcon);
 }
 
 function setBaseImageZoom(v) {
@@ -607,7 +611,7 @@ function setBaseGradientType(t) {
     
     const angleGroup = document.getElementById('base-angle-group');
     if (angleGroup) {
-        angleGroup.style.display = (t === 'linear' || t === 'conic') ? 'flex' : 'none';
+        angleGroup.classList.toggle('hidden', !(t === 'linear' || t === 'conic'));
     }
     
     updateBaseBackground();
@@ -707,6 +711,12 @@ function updateBasePreview() {
 function updateBaseBackground() {
     const bg = document.getElementById('base-bg');
     if (!bg) return;
+    
+    // If there's a custom icon, hide the background gradient
+    if (state.customBaseIcon) {
+        bg.style.background = 'transparent';
+        return;
+    }
     
     let color1 = state.baseColor;
     let color2 = state.baseColor2;
@@ -852,6 +862,11 @@ async function processImageUpload(file) {
             URL.revokeObjectURL(state.customBaseIcon);
         }
 
+        // Clear base text if it's the default "YOUR TEXT" when an image is uploaded
+        if (state.baseText === APP_CONFIG.baseText.default) {
+            setBaseText('');
+        }
+
         const localUrl = URL.createObjectURL(file);
         state.customBaseIcon = localUrl;
         const imgEl = document.getElementById('base-img');
@@ -936,6 +951,7 @@ async function processImageUpload(file) {
         updateRemoveButtonVisibility();
         updateBaseControls();
         updateBasePreview();
+        updateBaseBackground();
         syncStateToURL();
     }
 }
@@ -1006,6 +1022,11 @@ function resetBaseIcon() {
     setBaseGradientType(APP_CONFIG.gradientType.default);
     setBaseGradientAngle(APP_CONFIG.gradientAngle.default);
     
+    // Restore default text if it was cleared
+    if (!state.baseText || state.baseText.trim() === '') {
+        setBaseText(APP_CONFIG.baseText.default);
+    }
+    
     updateRemoveButtonVisibility();
     updateBaseControls();
     updateBasePreview();
@@ -1016,6 +1037,7 @@ function setBadgePosition(pos) {
     state.badgePosition = pos;
     const canvas = document.getElementById('icon-canvas');
     const wrap = document.getElementById('badge-wrap');
+    const extraSettings = document.getElementById('badge-settings-extra');
     
     // Remove old position classes
     canvas.classList.remove('pos-top-left', 'pos-top-right', 'pos-bottom-left', 'pos-bottom-right');
@@ -1023,8 +1045,10 @@ function setBadgePosition(pos) {
     
     if (pos === 'none') {
         wrap.style.display = 'none';
+        if (extraSettings) extraSettings.classList.add('hidden');
     } else {
         wrap.style.display = 'flex';
+        if (extraSettings) extraSettings.classList.remove('hidden');
         // Add new position classes
         canvas.classList.add('pos-' + pos);
         wrap.classList.add('pos-' + pos);

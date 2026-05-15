@@ -871,6 +871,37 @@ input[type="text"]:focus {
 
 #base-angle-group {
     margin-top: 1.25rem;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    opacity: 1;
+    max-height: 300px; /* Increased to avoid clipping */
+    overflow: hidden;
+}
+
+#base-angle-group.hidden {
+    opacity: 0;
+    max-height: 0;
+    margin-top: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+    pointer-events: none;
+    transform: translateY(-10px);
+}
+
+#base-gradient-controls,
+#base-image-controls {
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    opacity: 1;
+    max-height: 1000px;
+    overflow: hidden;
+}
+
+#base-gradient-controls.hidden,
+#base-image-controls.hidden {
+    opacity: 0;
+    max-height: 0;
+    margin-top: -1.25rem; /* Cancel one gap when hidden in flex parent */
+    pointer-events: none;
+    transform: translateY(-10px);
 }
 
 .shape-grid-2x2 {
@@ -878,6 +909,7 @@ input[type="text"]:focus {
     grid-template-columns: repeat(2, 1fr);
     gap: 0.35rem;
 }
+
 
 .shape-grid-4x2 {
     display: grid;
@@ -1019,6 +1051,24 @@ input[type="text"]:focus {
 }
 .custom-color-wrapper input[type="color"]::-webkit-color-swatch {
     border: none;
+}
+
+#badge-settings-extra {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    opacity: 1;
+    max-height: 1000px; /* Large enough for content */
+    overflow: hidden;
+}
+
+#badge-settings-extra.hidden {
+    opacity: 0;
+    max-height: 0;
+    margin-top: -1.25rem; /* Offset the gap from parent flex */
+    pointer-events: none;
+    transform: translateY(-10px);
 }
 
 .preview-actions {
