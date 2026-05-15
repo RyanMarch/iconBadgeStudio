@@ -92,7 +92,7 @@ body {
     overflow: hidden;
 }
 
-@media (max-width: 1150px) {
+@media (max-width: 899px) {
     body {
         height: auto;
         min-height: 100vh;
@@ -112,6 +112,7 @@ body {
         box-shadow: 0 25px 50px -12px var(--shadow-color);
     }
 }
+
 
 
 .preview-header {
@@ -141,7 +142,7 @@ h1 {
     line-height: 1.1;
 }
 
-@media (max-width: 1150px) {
+@media (max-width: 767px) {
     h1 {
         font-size: 3rem;
         letter-spacing: -0.02em;
@@ -2169,5 +2170,122 @@ body.screenshot-mode .badge-container {
     .theme-toggle {
         width: 32px;
         height: 32px;
+    }
+}
+
+/* Tablet / Mid-size Two-Column Layout (Landscape or Large Portrait) */
+@media (min-width: 900px) and (max-width: 1150px) {
+    body {
+        height: 100vh;
+        overflow: hidden;
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+
+    .container {
+        grid-template-columns: 1fr 380px !important;
+        grid-template-rows: auto !important;
+        height: 100vh !important;
+        overflow-y: auto !important;
+        overflow-x: hidden !important;
+        border-radius: 0 !important;
+        max-width: none !important;
+        gap: 0 !important;
+        align-items: start !important;
+        background: var(--bg-color) !important;
+        border: none !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+
+    .preview-section {
+        grid-column: 1 !important;
+        grid-row: 1 / 20 !important;
+        position: sticky !important;
+        top: 0 !important;
+        height: 100vh !important;
+        padding: 2.5rem !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: space-between !important;
+        align-items: center !important; /* Prevents children from stretching horizontally */
+        background: var(--panel-bg) !important;
+        backdrop-filter: blur(20px) !important;
+        -webkit-backdrop-filter: blur(20px) !important;
+        margin: 0 !important;
+        border-bottom: none !important;
+        border-right: 1px solid var(--glass-border) !important;
+        border-radius: 0 !important;
+        z-index: 100 !important;
+        overflow: hidden !important;
+        zoom: 1 !important;
+    }
+
+    .preview-header {
+        margin-top: 0 !important;
+        flex-shrink: 0 !important;
+        width: 100% !important;
+    }
+
+    h1 {
+        font-size: 2.5rem !important;
+        display: block !important;
+    }
+
+    .icon-canvas-wrapper {
+        width: 100% !important;
+        max-width: 60vh !important; /* Limits width by height to maintain square */
+        max-height: 60vh !important; /* Limits height directly */
+        aspect-ratio: 1/1 !important;
+        height: auto !important;
+        margin: auto !important;
+        flex: none !important;
+        display: flex !important;
+    }
+
+    .controls-section {
+        grid-column: 2 !important;
+        height: auto !important;
+        overflow: visible !important;
+        padding: 2.5rem 2rem !important;
+        background: var(--sidebar-bg) !important;
+        box-shadow: inset 10px 0 30px -10px rgba(0, 0, 0, 0.3) !important;
+        border-left: none !important;
+        zoom: 0.95 !important;
+    }
+
+    .mobile-divider {
+        grid-column: 2 !important;
+        display: block !important;
+        margin: 0 2rem !important;
+        width: calc(100% - 4rem) !important;
+    }
+
+    .mobile-divider:first-of-type {
+        display: none !important;
+    }
+
+    .preview-actions {
+        display: flex !important;
+        flex-direction: row !important;
+        gap: 1rem !important;
+        margin-top: auto !important;
+        padding-top: 1rem !important;
+        opacity: 1 !important;
+        max-height: none !important;
+        width: 100% !important;
+        flex-shrink: 0 !important;
+    }
+
+    .preview-actions .btn-screenshot-mode {
+        display: none !important;
+    }
+
+    .preview-actions .btn-export,
+    .preview-actions .share-wrapper {
+        flex: 1 !important;
+        display: flex !important;
+        width: auto !important;
     }
 }

@@ -226,7 +226,8 @@ function setupStickyMobilePreview() {
 
     window.addEventListener('scroll', () => {
         const isLandscapeMobile = window.innerWidth > window.innerHeight && window.innerHeight < 500;
-        if (window.innerWidth > 1150 || isLandscapeMobile || document.body.classList.contains('screenshot-mode')) {
+        const isTablet = window.innerWidth >= 900 && window.innerWidth <= 1150;
+        if (window.innerWidth > 1150 || isLandscapeMobile || isTablet || document.body.classList.contains('screenshot-mode')) {
             // Reset variables if not in mobile/normal mode or if in landscape mobile
             document.documentElement.style.removeProperty('--sticky-scale');
             document.documentElement.style.removeProperty('--sticky-opacity');
@@ -662,6 +663,30 @@ function setBaseTextColor(color) {
     syncStateToURL();
 }
 
+function calculateDynamicFontSize(text, canvasWidth) {
+    const textLength = text.length;
+    const words = text.split(/\s+/);
+    const longestWordLength = Math.max(...words.map(w => w.length));
+    
+    // charFactor determines how "tightly" we fit the characters.
+    const charFactor = 0.85; 
+    
+    // Calculate font size as a percentage of the container width
+    // A base of 20 is more balanced for icon design than the previous 25
+    let fontSizeBase = Math.min(20, 20 / (longestWordLength * charFactor / 4));
+    const maxTotalFontSize = (20 * 3.5) / (textLength * charFactor / 4);
+    fontSizeBase = Math.min(fontSizeBase, maxTotalFontSize);
+    
+    // Scale by the user's baseSize setting
+    fontSizeBase = fontSizeBase * (state.baseSize / 80);
+    
+    // Minimum legible size
+    if (fontSizeBase < 4) fontSizeBase = 4;
+    
+    // Convert percentage to actual pixels
+    return (fontSizeBase * canvasWidth) / 100;
+}
+
 function updateBasePreview() {
     const imgEl = document.getElementById('base-img');
     const textEl = document.getElementById('base-text');
@@ -689,27 +714,7 @@ function updateBasePreview() {
         // Font size scaling: Now using pixel calculation for stability across browsers/zoom levels
         const canvas = document.getElementById('icon-canvas');
         const canvasWidth = canvas ? canvas.offsetWidth : 320;
-        const textLength = textToShow.length;
-        const words = textToShow.split(/\s+/);
-        const longestWordLength = Math.max(...words.map(w => w.length));
-        
-        // charFactor determines how "tightly" we fit the characters.
-        const charFactor = 0.85; 
-        
-        // Calculate font size as a percentage of the container width
-        // A base of 20 is more balanced for icon design than the previous 25
-        let fontSizeBase = Math.min(20, 20 / (longestWordLength * charFactor / 4));
-        const maxTotalFontSize = (20 * 3.5) / (textLength * charFactor / 4);
-        fontSizeBase = Math.min(fontSizeBase, maxTotalFontSize);
-        
-        // Scale by the user's baseSize setting
-        fontSizeBase = fontSizeBase * (state.baseSize / 80);
-        
-        // Minimum legible size
-        if (fontSizeBase < 4) fontSizeBase = 4;
-        
-        // Convert percentage to actual pixels
-        const fontSizePx = (fontSizeBase * canvasWidth) / 100;
+        const fontSizePx = calculateDynamicFontSize(textToShow, canvasWidth);
         
         textEl.style.fontSize = fontSizePx + 'px';
         textEl.style.lineHeight = '0.95';
@@ -1295,7 +1300,7 @@ async function exportPNG() {
         left: 0 !important;
         width: 1024px !important;
         height: 1024px !important;
-        z-index: 999999 !important; /* One level below overlay */
+        z-index: 999999 !important;
         background: transparent !important;
         overflow: visible !important;
         display: flex !important;
@@ -1303,6 +1308,12 @@ async function exportPNG() {
         justify-content: center !important;
         pointer-events: none !important;
         opacity: 1 !important;
+        /* Reset any inherited sticky variables */
+        --sticky-scale: 1 !important;
+        --sticky-opacity: 1 !important;
+        --sticky-margin: 0 !important;
+        --sticky-actions-h: auto !important;
+        --sticky-actions-m: 0.5rem !important;
     `;
 
     // 3. Clone the icon and set to absolute pixel dimensions for high-quality capture
@@ -1322,7 +1333,41 @@ async function exportPNG() {
         max-width: none !important;
         max-height: none !important;
         position: relative !important;
+        transform: none !important; /* Extremely important: disable any sticky scaling */
     `;
+
+    // Force internal elements to 1:1 and full size
+    const canvas = clone.querySelector('.icon-canvas');
+    if (canvas) {
+        canvas.style.cssText = `
+            width: 1024px !important;
+            height: 1024px !important;
+            max-width: none !important;
+            max-height: none !important;
+            transform: none !important;
+            margin: 0 !important;
+        `;
+    }
+
+    // Fix dynamic font sizes for the 1024px target
+    const baseText = clone.querySelector('.base-text');
+    if (baseText && state.baseText) {
+        // We use a reference size of 1024px for the export
+        const fontSize = calculateDynamicFontSize(state.baseText, 1024);
+        baseText.style.fontSize = fontSize + 'px';
+    }
+
+    const badgeSpan = clone.querySelector('.badge-icon span');
+    if (badgeSpan) {
+        // Recalculate badge font size for 1024px
+        let fontSize = 12; // Base size in cqw (percentage of canvas width)
+        if (state.icon.length > 1) {
+            const areaBase = (state.innerScale / 100) * 150; 
+            fontSize = Math.min(12, Math.sqrt(areaBase / (state.icon.length * 0.8)));
+            if (fontSize < 2) fontSize = 2;
+        }
+        badgeSpan.style.fontSize = (fontSize * 1024 / 100) + 'px';
+    }
 
     cleanRoom.appendChild(clone);
     document.body.appendChild(cleanRoom);
@@ -1336,7 +1381,7 @@ async function exportPNG() {
         }));
 
         // 4. Wait for browser to render the clean room
-        await new Promise(r => setTimeout(r, 600));
+        await new Promise(r => setTimeout(r, 800));
 
         // 5. Capture the isolated room
         const dataUrl = await domtoimage.toPng(cleanRoom, {
