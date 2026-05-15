@@ -196,6 +196,90 @@ function init() {
     // Setup Drag and Drop + Paste
     setupDragAndDrop();
     setupPaste();
+
+    // Sticky Mobile Preview logic
+    setupStickyMobilePreview();
+}
+
+function setupStickyMobilePreview() {
+    const canvas = document.querySelector('.icon-canvas-wrapper');
+    const header = document.querySelector('.preview-header');
+    const actions = document.querySelector('.preview-actions');
+    if (!canvas) return;
+
+    // Use IntersectionObserver to toggle a class when the element becomes stuck
+    const observer = new IntersectionObserver(
+        ([e]) => {
+            e.target.classList.toggle('is-stuck', e.intersectionRatio < 1);
+        },
+        { 
+            threshold: [1],
+            rootMargin: '-85px 0px 0px 0px' // Matches the -5.25rem top in CSS
+        }
+    );
+    const previewSection = document.querySelector('.preview-section');
+    if (previewSection) observer.observe(previewSection);
+
+    window.addEventListener('scroll', () => {
+        if (window.innerWidth > 1150 || document.body.classList.contains('screenshot-mode')) {
+            // Reset variables if not in mobile/normal mode
+            document.documentElement.style.removeProperty('--sticky-scale');
+            document.documentElement.style.removeProperty('--sticky-opacity');
+            document.documentElement.style.removeProperty('--sticky-pointer');
+            document.documentElement.style.removeProperty('--sticky-margin');
+            document.documentElement.style.removeProperty('--sticky-actions-h');
+            document.documentElement.style.removeProperty('--sticky-actions-m');
+            
+            const p = document.querySelector('.preview-section');
+            if (p) {
+                p.classList.remove('is-stuck');
+                p.style.paddingTop = '';
+                p.style.paddingBottom = '';
+            }
+            return;
+        }
+        
+        const scrollY = window.scrollY;
+        
+        // With the header scrolling off, we start scaling as it disappears
+        const startScroll = 50; 
+        
+        const activeScroll = Math.max(0, scrollY - startScroll);
+        const maxScroll = 120; 
+        
+        // Calculate factor (0 to 1)
+        const factor = Math.min(1, activeScroll / maxScroll);
+        
+        // Target values: scale from 1.0 to 0.6
+        const scale = 1 - (factor * 0.4);
+        const opacity = 1 - (factor * 2.5); // Fade out actions very quickly
+        
+        // ONLY collapse the actions area
+        const actionsH = factor > 0.6 ? 0 : 200 * (1 - factor * 1.6);
+        const actionsM = factor > 0.6 ? 0 : 0.5 * (1 - factor * 1.6);
+        
+        // Adjust margin to collapse the space taken by the scaled-down canvas
+        const margin = - (factor * 48); 
+        
+        document.documentElement.style.setProperty('--sticky-scale', scale);
+        document.documentElement.style.setProperty('--sticky-opacity', Math.max(0, opacity));
+        document.documentElement.style.setProperty('--sticky-pointer', opacity < 0.1 ? 'none' : 'all');
+        document.documentElement.style.setProperty('--sticky-margin', `${margin}%`);
+        
+        // Actions collapse
+        document.documentElement.style.setProperty('--sticky-actions-h', `${actionsH}px`);
+        document.documentElement.style.setProperty('--sticky-actions-m', `${actionsM}rem`);
+        
+        // Refined padding logic: Keep title spaced but collapse bottom when stuck
+        const paddingTop = 1.5;
+        const paddingBottom = 1.5 - (factor * 0.75);
+        
+        const preview = document.querySelector('.preview-section');
+        if (preview) {
+            preview.style.paddingTop = `${paddingTop}rem`;
+            preview.style.paddingBottom = `${paddingBottom}rem`;
+        }
+    }, { passive: true });
 }
 
 function updateAppScale() {
