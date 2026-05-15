@@ -1266,15 +1266,12 @@ async function exportPNG() {
         opacity: 1 !important;
     `;
 
-    // 3. Clone the icon and scale it to fit the 1024px room
+    // 3. Clone the icon and set to absolute pixel dimensions for high-quality capture
     const clone = captureArea.cloneNode(true);
-    const scale = 1024 / captureArea.offsetWidth;
     
     clone.style.cssText = `
-        transform: scale(${scale}) !important;
-        transform-origin: center center !important;
-        width: ${captureArea.offsetWidth}px !important;
-        height: ${captureArea.offsetHeight}px !important;
+        width: 1024px !important;
+        height: 1024px !important;
         margin: 0 !important;
         padding: 0 !important;
         background: transparent !important;
@@ -1282,6 +1279,10 @@ async function exportPNG() {
         border-radius: 0 !important;
         box-shadow: none !important;
         overflow: visible !important;
+        flex: none !important;
+        max-width: none !important;
+        max-height: none !important;
+        position: relative !important;
     `;
 
     cleanRoom.appendChild(clone);

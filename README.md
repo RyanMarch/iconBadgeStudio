@@ -7,9 +7,7 @@ A premium, web-based tool for creating professional icons with customizable badg
 ## Features
 
 ### Advanced Base Customization
-- **Smart Image Upload**: Drag and drop images directly onto the canvas or paste them from your clipboard (Ctrl/Cmd + V).
-- **Client-Side Optimization**: Automatic high-quality resizing and compression for large images (up to 1500px) ensures fast uploads and reliable sharing.
-- **Instant Previews**: See your changes immediately while background processes handle cloud syncing.
+- **Custom Image Upload**: Drag and drop images directly onto the canvas or paste them from your clipboard (Ctrl/Cmd + V).
 - **Dynamic Gradients**: Create stunning backgrounds with Linear, Radial, Conic, and Mesh gradient types.
 - **Skeuomorphic Frames**: Apply professional finishes like **Glossy Shine**, **Metallic**, **Glass**, and **Embossed** borders.
 - **Visual Effects**: Add depth with Noise, Glow, and Vignette overlays.
