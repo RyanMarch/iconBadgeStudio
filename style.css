@@ -134,10 +134,11 @@ body {
 
 h1 {
     font-family: 'Outfit', sans-serif;
-    font-size: 4.3rem;
+    font-size: clamp(2rem, 10vh, 4.3rem);
     background: linear-gradient(to right, #60a5fa, #a78bfa);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
+    line-height: 1.1;
 }
 
 @media (max-width: 1150px) {
@@ -165,8 +166,11 @@ h1 {
 
 .icon-canvas-wrapper {
     position: relative;
-    width: 100%;
-    max-width: min(1024px, 68vh);
+    flex: 1;
+    min-height: 0;
+    width: auto;
+    max-width: 100%;
+    max-height: min(1024px, 68vh);
     aspect-ratio: 1 / 1;
     margin: 0 auto;
     background-color: var(--preview-canvas-bg);
@@ -181,7 +185,9 @@ h1 {
 
 @media (max-width: 1150px) {
     .icon-canvas-wrapper {
+        flex: none;
         width: 100%;
+        max-height: none;
         aspect-ratio: 1/1;
         height: auto;
         transform: scale(var(--sticky-scale, 1));
@@ -622,7 +628,7 @@ h1 {
     justify-content: flex-start;
     gap: 1.25rem;
     border-left: 1px solid var(--glass-border);
-    padding: 2.5rem 1.75rem;
+    padding: 2rem 1.75rem;
     height: 100%;
     overflow-y: auto;
     overflow-x: hidden;
@@ -653,7 +659,7 @@ h1 {
 @media (max-width: 1150px) {
     .controls-section {
         border-left: none;
-        padding: 1.5rem;
+        padding: 0.5rem;
         max-height: none;
         overflow-y: visible;
         zoom: 1 !important;
@@ -672,9 +678,9 @@ h1 {
     flex-direction: column;
     align-items: center;
     justify-content: space-between;
-    gap: 1.5rem;
+    gap: clamp(0.75rem, 3vh, 1.5rem);
     height: 100%;
-    padding: 2.5rem 2rem;
+    padding: clamp(1rem, 5vh, 2.5rem) 2rem;
     overflow: hidden;
     zoom: var(--app-scale);
     position: relative;
@@ -1041,15 +1047,14 @@ input[type="text"]:focus {
         overflow: hidden;
         transition: opacity 0.2s ease, max-height 0.2s ease, margin 0.2s ease;
         pointer-events: var(--sticky-pointer, all);
+        gap: 0.75rem;
     }
     
-    .preview-actions .btn-export {
+    .preview-actions .btn-export,
+    .preview-actions .btn-screenshot-mode,
+    .preview-actions .share-wrapper {
         width: 100%;
         flex: none;
-    }
-    
-    .preview-actions button.secondary {
-        flex: 1;
     }
 }
 
@@ -1418,8 +1423,9 @@ button.danger:hover {
 .screenshot-mode .preview-header,
 .screenshot-mode .preview-actions,
 .screenshot-mode .theme-toggle,
-.screenshot-mode .instruction-text {
-    display: none;
+.screenshot-mode .instruction-text,
+.screenshot-mode .mobile-divider {
+    display: none !important;
 }
 
 .screenshot-toolbar {
@@ -1431,11 +1437,24 @@ button.danger:hover {
     z-index: 2000;
     background: var(--panel-bg);
     backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
     border: 1px solid var(--glass-border);
     padding: 0.75rem;
     border-radius: 20px;
     gap: 0.75rem;
     align-items: center;
+    box-shadow: none !important;
+}
+
+@media (max-width: 768px) {
+    .screenshot-toolbar {
+        top: 1rem;
+        right: 1rem;
+        left: 1rem;
+        width: auto;
+        padding: 0.6rem;
+        gap: 0.5rem;
+    }
 }
 
 .toolbar-main {
@@ -1484,6 +1503,8 @@ button.danger:hover {
     align-items: center;
     gap: 0.5rem;
     transition: all 0.2s;
+    justify-content: center;
+    flex: 1;
 }
 
 .toolbar-btn.btn-export {
@@ -1530,15 +1551,18 @@ button.danger:hover {
 }
 
 .screenshot-mode .container {
-    background: transparent;
-    border: none;
-    box-shadow: none;
+    background: #ffffff !important;
+    border: none !important;
+    box-shadow: none !important;
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
     height: 100vh !important;
     width: 100vw !important;
-    padding: 0;
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border-radius: 0 !important;
 }
 
 .screenshot-mode .preview-section {
@@ -1547,6 +1571,13 @@ button.danger:hover {
     justify-content: center !important;
     width: 100% !important;
     height: 100% !important;
+    background: transparent !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    position: relative !important;
+    top: 0 !important;
+    padding: 0 !important;
+    box-shadow: none !important;
 }
 
 .screenshot-mode .icon-canvas-wrapper {
@@ -1555,13 +1586,14 @@ button.danger:hover {
     border-radius: 0;
     box-shadow: none;
     margin: auto !important;
-    width: 80vmin !important;
-    height: 80vmin !important;
-    min-width: 80vmin !important;
-    min-height: 80vmin !important;
+    width: 85vmin !important;
+    height: 85vmin !important;
+    min-width: unset !important;
+    min-height: unset !important;
     aspect-ratio: 1/1 !important;
     flex-shrink: 0 !important;
     overflow: visible !important;
+    transform: none !important; /* Reset any zoom/scale for mobile */
 }
 
 .return-btn {
@@ -1587,21 +1619,21 @@ button.danger:hover {
     transform: translateY(-2px);
 }
 
-.screenshot-mode .icon-canvas-wrapper {
-    background: transparent;
-    border: none;
-    border-radius: 0;
-    box-shadow: none;
-}
-
 .screenshot-mode .reset-btn-sidebar {
     display: none !important;
 }
 
 @media (max-width: 1150px) {
     .screenshot-mode .icon-canvas-wrapper {
-        width: 100vw;
-        height: 100vw;
+        width: 90vw !important;
+        height: 90vw !important;
+    }
+    
+    body.screenshot-mode {
+        overflow: hidden !important;
+        padding: 0 !important;
+        height: 100vh !important;
+        width: 100vw !important;
     }
 }
 
@@ -1882,6 +1914,11 @@ input[type="range"] {
 body.screenshot-mode {
     background-image: none !important;
     background-color: #ffffff !important;
+    overflow: hidden !important;
+    padding: 0 !important;
+    height: 100vh !important;
+    width: 100vw !important;
+    box-shadow: none !important;
 }
 
 body.screenshot-mode .container {
