@@ -7,7 +7,9 @@ A premium, web-based tool for creating professional icons with customizable badg
 ## Features
 
 ### Advanced Base Customization
-- **Custom Image Upload**: Use your own graphics as the icon base with automatic resizing.
+- **Smart Image Upload**: Drag and drop images directly onto the canvas or paste them from your clipboard (Ctrl/Cmd + V).
+- **Client-Side Optimization**: Automatic high-quality resizing and compression for large images (up to 1500px) ensures fast uploads and reliable sharing.
+- **Instant Previews**: See your changes immediately while background processes handle cloud syncing.
 - **Dynamic Gradients**: Create stunning backgrounds with Linear, Radial, Conic, and Mesh gradient types.
 - **Skeuomorphic Frames**: Apply professional finishes like **Glossy Shine**, **Metallic**, **Glass**, and **Embossed** borders.
 - **Visual Effects**: Add depth with Noise, Glow, and Vignette overlays.
@@ -32,11 +34,13 @@ A premium, web-based tool for creating professional icons with customizable badg
 
 ## Responsive Design
 - **Theme Chooser**: Easily switch between light and dark mode for distraction-free editing.
-- **Optimized for all devices**: Responsive design means icon editing can happen wherever inspiration strikes.
+- **Sticky Mobile Preview**: A pinned canvas preview on mobile ensures you always see your design while adjusting settings.
 
 ## Built With
 
 - **Vanilla JS/HTML5/CSS3**: For maximum performance and compatibility.
+- **[esbuild](https://esbuild.github.io/)**: Blazing fast build-time minification and bundling.
+- **[Cloudflare Pages](https://pages.cloudflare.com/)**: High-performance global hosting and deployment.
 - **[Cloudinary](https://cloudinary.com/)**: Scalable image hosting for shareable URLs.
 - **[Lucide](https://lucide.dev/)**: For a beautiful and consistent icon set.
 - **[dom-to-image](https://github.com/tsayen/dom-to-image)**: Precision canvas-to-image conversion.
