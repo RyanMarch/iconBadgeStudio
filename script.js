@@ -91,11 +91,7 @@ function syncStateToURL() {
     const newSearch = params.toString();
     const newUrl = window.location.pathname + (newSearch ? '?' + newSearch : '');
     
-    // Toggle Copy URL button visibility
-    const copyBtn = document.getElementById('copy-url-btn');
-    if (copyBtn) {
-        copyBtn.style.display = newSearch ? 'flex' : 'none';
-    }
+    // Share button is now always visible via HTML
 
     if (window.location.search !== (newSearch ? '?' + newSearch : '')) {
         window.history.replaceState({}, '', newUrl);
@@ -200,6 +196,90 @@ function init() {
     // Setup Drag and Drop + Paste
     setupDragAndDrop();
     setupPaste();
+
+    // Sticky Mobile Preview logic
+    setupStickyMobilePreview();
+}
+
+function setupStickyMobilePreview() {
+    const canvas = document.querySelector('.icon-canvas-wrapper');
+    const header = document.querySelector('.preview-header');
+    const actions = document.querySelector('.preview-actions');
+    if (!canvas) return;
+
+    // Use IntersectionObserver to toggle a class when the element becomes stuck
+    const observer = new IntersectionObserver(
+        ([e]) => {
+            e.target.classList.toggle('is-stuck', e.intersectionRatio < 1);
+        },
+        { 
+            threshold: [1],
+            rootMargin: '-85px 0px 0px 0px' // Matches the -5.25rem top in CSS
+        }
+    );
+    const previewSection = document.querySelector('.preview-section');
+    if (previewSection) observer.observe(previewSection);
+
+    window.addEventListener('scroll', () => {
+        if (window.innerWidth > 1150 || document.body.classList.contains('screenshot-mode')) {
+            // Reset variables if not in mobile/normal mode
+            document.documentElement.style.removeProperty('--sticky-scale');
+            document.documentElement.style.removeProperty('--sticky-opacity');
+            document.documentElement.style.removeProperty('--sticky-pointer');
+            document.documentElement.style.removeProperty('--sticky-margin');
+            document.documentElement.style.removeProperty('--sticky-actions-h');
+            document.documentElement.style.removeProperty('--sticky-actions-m');
+            
+            const p = document.querySelector('.preview-section');
+            if (p) {
+                p.classList.remove('is-stuck');
+                p.style.paddingTop = '';
+                p.style.paddingBottom = '';
+            }
+            return;
+        }
+        
+        const scrollY = window.scrollY;
+        
+        // With the header scrolling off, we start scaling as it disappears
+        const startScroll = 50; 
+        
+        const activeScroll = Math.max(0, scrollY - startScroll);
+        const maxScroll = 120; 
+        
+        // Calculate factor (0 to 1)
+        const factor = Math.min(1, activeScroll / maxScroll);
+        
+        // Target values: scale from 1.0 to 0.6
+        const scale = 1 - (factor * 0.4);
+        const opacity = 1 - (factor * 2.5); // Fade out actions very quickly
+        
+        // ONLY collapse the actions area
+        const actionsH = factor > 0.6 ? 0 : 200 * (1 - factor * 1.6);
+        const actionsM = factor > 0.6 ? 0 : 0.5 * (1 - factor * 1.6);
+        
+        // Adjust margin to collapse the space taken by the scaled-down canvas
+        const margin = - (factor * 48); 
+        
+        document.documentElement.style.setProperty('--sticky-scale', scale);
+        document.documentElement.style.setProperty('--sticky-opacity', Math.max(0, opacity));
+        document.documentElement.style.setProperty('--sticky-pointer', opacity < 0.1 ? 'none' : 'all');
+        document.documentElement.style.setProperty('--sticky-margin', `${margin}%`);
+        
+        // Actions collapse
+        document.documentElement.style.setProperty('--sticky-actions-h', `${actionsH}px`);
+        document.documentElement.style.setProperty('--sticky-actions-m', `${actionsM}rem`);
+        
+        // Refined padding logic: Keep title spaced but collapse bottom when stuck
+        const paddingTop = 1.5;
+        const paddingBottom = 1.5 - (factor * 0.75);
+        
+        const preview = document.querySelector('.preview-section');
+        if (preview) {
+            preview.style.paddingTop = `${paddingTop}rem`;
+            preview.style.paddingBottom = `${paddingBottom}rem`;
+        }
+    }, { passive: true });
 }
 
 function updateAppScale() {
@@ -864,26 +944,37 @@ function setupDragAndDrop() {
     const dropZone = document.getElementById('capture-area');
     if (!dropZone) return;
 
+    let dragCounter = 0;
+
+    // 1. Prevent default browser behavior everywhere
     ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-        dropZone.addEventListener(eventName, (e) => {
+        window.addEventListener(eventName, (e) => {
             e.preventDefault();
             e.stopPropagation();
         }, false);
     });
 
-    ['dragenter', 'dragover'].forEach(eventName => {
-        dropZone.addEventListener(eventName, () => {
+    // 2. Visual feedback on capture-area when dragging anywhere over the window
+    window.addEventListener('dragenter', (e) => {
+        dragCounter++;
+        if (dragCounter === 1) {
             dropZone.classList.add('dragging');
-        }, false);
+        }
     });
 
-    ['dragleave', 'drop'].forEach(eventName => {
-        dropZone.addEventListener(eventName, () => {
+    window.addEventListener('dragleave', (e) => {
+        dragCounter--;
+        if (dragCounter <= 0) {
+            dragCounter = 0;
             dropZone.classList.remove('dragging');
-        }, false);
+        }
     });
 
-    dropZone.addEventListener('drop', (e) => {
+    // 3. Handle drop anywhere
+    window.addEventListener('drop', (e) => {
+        dragCounter = 0;
+        dropZone.classList.remove('dragging');
+        
         const file = e.dataTransfer.files[0];
         if (file) processImageUpload(file);
     }, false);
@@ -908,7 +999,13 @@ function resetBaseIcon() {
     const uploadInput = document.getElementById('base-icon-upload');
     if (uploadInput) uploadInput.value = '';
     
-    setBaseColor1('#5E007F');
+    // Restore default base background and zoom
+    setBaseColor1(APP_CONFIG.baseColor.default);
+    setBaseColor2(APP_CONFIG.baseColor2.default);
+    setBaseImageZoom(APP_CONFIG.baseZoom.default);
+    setBaseGradientType(APP_CONFIG.gradientType.default);
+    setBaseGradientAngle(APP_CONFIG.gradientAngle.default);
+    
     updateRemoveButtonVisibility();
     updateBaseControls();
     updateBasePreview();
@@ -1023,6 +1120,10 @@ function setBaseSize(v) {
     if (bg) {
         bg.style.width = v + '%';
         bg.style.height = v + '%';
+        
+        // Dynamic nudge: ensure (size + nudge) <= 100% to prevent overflow
+        const nudge = Math.max(0, Math.min(4, 100 - v));
+        document.documentElement.style.setProperty('--base-nudge', nudge + '%');
     }
     updateBasePreview();
     syncStateToURL();
@@ -1128,42 +1229,77 @@ function toggleScreenshotMode() {
 
 async function exportPNG() {
     const captureArea = document.getElementById('capture-area');
-    const btn = document.querySelector('button.primary');
+    const btn = document.querySelector('.btn-export');
     const originalText = btn.innerHTML;
     
-    btn.innerHTML = 'Generating...';
+    // 1. Show the Loading Overlay
+    let overlay = document.getElementById('export-overlay');
+    if (!overlay) {
+        overlay = document.createElement('div');
+        overlay.id = 'export-overlay';
+        overlay.className = 'export-loading-overlay';
+        overlay.innerHTML = `
+            <div class="export-spinner"></div>
+            <div class="export-text">Polishing your icon...</div>
+        `;
+        document.body.appendChild(overlay);
+    }
+    overlay.classList.add('active');
+    
     btn.disabled = true;
 
-    // Enter screenshot mode temporarily to hide UI elements and background styles
-    document.body.classList.add('screenshot-mode');
+    // 2. Create a "Clean Room" for total isolation
+    const cleanRoom = document.createElement('div');
+    cleanRoom.style.cssText = `
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        width: 1024px !important;
+        height: 1024px !important;
+        z-index: 999999 !important; /* One level below overlay */
+        background: transparent !important;
+        overflow: visible !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        pointer-events: none !important;
+        opacity: 1 !important;
+    `;
+
+    // 3. Clone the icon and scale it to fit the 1024px room
+    const clone = captureArea.cloneNode(true);
+    const scale = 1024 / captureArea.offsetWidth;
+    
+    clone.style.cssText = `
+        transform: scale(${scale}) !important;
+        transform-origin: center center !important;
+        width: ${captureArea.offsetWidth}px !important;
+        height: ${captureArea.offsetHeight}px !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        background: transparent !important;
+        border: none !important;
+        border-radius: 0 !important;
+        box-shadow: none !important;
+        overflow: visible !important;
+    `;
+
+    cleanRoom.appendChild(clone);
+    document.body.appendChild(cleanRoom);
 
     try {
-        // Ensure images are loaded and wait for any layout shifts
-        const images = captureArea.querySelectorAll('img');
+        // Ensure images are loaded inside the clone
+        const images = clone.querySelectorAll('img');
         await Promise.all(Array.from(images).map(img => {
             if (img.complete) return Promise.resolve();
             return new Promise(resolve => { img.onload = resolve; img.onerror = resolve; });
         }));
 
-        // Tiny delay for screenshot mode styles to settle
-        await new Promise(r => setTimeout(r, 200));
+        // 4. Wait for browser to render the clean room
+        await new Promise(r => setTimeout(r, 600));
 
-        // First capture to "prime" the browser
-        await domtoimage.toPng(captureArea, {
-            width: 1024,
-            height: 1024,
-            cacheBust: true,
-            style: {
-                transform: 'scale(1)',
-                left: '0',
-                top: '0',
-                margin: '0',
-                display: 'flex'
-            }
-        });
-
-        // Second capture for the actual file
-        const finalUrl = await domtoimage.toPng(captureArea, {
+        // 5. Capture the isolated room
+        const dataUrl = await domtoimage.toPng(cleanRoom, {
             width: 1024,
             height: 1024,
             cacheBust: true
@@ -1171,32 +1307,40 @@ async function exportPNG() {
 
         const link = document.createElement('a');
         link.download = `icon-${state.icon}-${state.shape}.png`;
-        link.href = finalUrl;
+        link.href = dataUrl;
         link.click();
+
     } catch (err) {
         console.error('Export failed:', err);
         alert('Export failed. Try taking a manual screenshot.');
     } finally {
-        // Exit screenshot mode
-        document.body.classList.remove('screenshot-mode');
-        btn.innerHTML = originalText;
+        // 6. Cleanup
+        if (cleanRoom.parentNode) document.body.removeChild(cleanRoom);
+        overlay.classList.remove('active');
         btn.disabled = false;
     }
 }
 
-async function copyURL() {
-    const btn = document.getElementById('copy-url-btn');
+async function handleShareClick() {
+    // On mobile, trigger native share immediately
+    if (window.innerWidth <= 1150) {
+        await nativeShareOnly();
+    }
+}
+
+async function copyURLOnly() {
+    const btn = document.getElementById('share-btn');
     const originalContent = btn.innerHTML;
     
+    let url = window.location.href;
+    if (window.location.search) {
+        url = window.location.origin + '/s/' + window.location.search;
+    }
+
     try {
-        let url = window.location.href;
-        if (window.location.search) {
-            // Use /s/ for the share preview to bypass Cloudflare's static cache
-            url = window.location.origin + '/s/' + window.location.search;
-        }
         await navigator.clipboard.writeText(url);
         
-        // Success state
+        // Visual feedback on the main button
         btn.innerHTML = '<i data-lucide="check" style="width:18px;height:18px"></i> Copied!';
         btn.classList.add('success');
         lucide.createIcons();
@@ -1209,6 +1353,32 @@ async function copyURL() {
     } catch (err) {
         console.error('Failed to copy:', err);
         alert('Failed to copy URL to clipboard.');
+    }
+}
+
+async function nativeShareOnly() {
+    let url = window.location.href;
+    if (window.location.search) {
+        url = window.location.origin + '/s/' + window.location.search;
+    }
+
+    if (navigator.share) {
+        try {
+            await navigator.share({
+                title: 'Check out my icon design!',
+                text: 'I designed this icon using Icon Studio.',
+                url: url
+            });
+        } catch (err) {
+            if (err.name !== 'AbortError') {
+                console.error('Native share failed:', err);
+                // Fallback to copy if native share fails for some other reason
+                await copyURLOnly();
+            }
+        }
+    } else {
+        // Fallback for desktop browsers that don't support navigator.share
+        await copyURLOnly();
     }
 }
 
