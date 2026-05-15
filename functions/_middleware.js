@@ -44,14 +44,14 @@ export async function onRequest(context) {
     
     // FANCY PRODUCT SHOT (Final professional layout with auto-wrapping)
     const imageUrl = [
-        `https://res.cloudinary.com/rm20abcd26/image/upload`,
+        `https://res.cloudinary.com/${imgParam ? 'rm20abcd26' : 'demo'}/image/upload`,
         `c_fill,w_1200,h_630,co_rgb:0f172a,e_colorize:100`, // Step 1: Create canvas
         `l_${baseImageId.replace(/\//g, ':')}/c_fill,w_450,h_450,r_${radius},${iconTransform}/fl_layer_apply,g_center,x_-300`, // Step 2: Pin icon
-        `l_text:Arial_80_bold_line_spacing_-20:${cleanText},co_rgb:ffffff/fl_layer_apply,g_center,x_-300,w_400,c_fit`, // Step 3: Pin icon text (centered + wrapped)
+        cleanText ? `l_text:Arial_80_bold_line_spacing_-20:${cleanText},co_rgb:ffffff/fl_layer_apply,g_center,x_-300,w_400,c_fit` : '', // Step 3: Pin icon text (centered + wrapped)
         `l_text:Montserrat_95_bold_letter_spacing_-2:Icon%20Studio,co_rgb:818cf8/fl_layer_apply,g_west,x_620,y_-120`, // Step 4: Brand title
         `l_text:Montserrat_55_bold:View%20shared%0Aicon%20design,co_rgb:ffffff/fl_layer_apply,g_west,x_620,y_80,w_500,c_fit`, // Step 5: Subtitle
-        `${version ? version + '/' : ''}${baseImageId}.jpg`
-    ].join('/');
+        imgParam ? `${version ? version + '/' : ''}${baseImageId}.jpg` : baseImageId
+    ].filter(Boolean).join('/');
 
     const title = text ? `"${text}" | Icon Studio` : "Shared Design | Icon Studio";
     const desc = "Check out this custom icon design I made in Icon Studio! Edit, customize, and share your own high-fidelity icons instantly.";
