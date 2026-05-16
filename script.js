@@ -1364,12 +1364,18 @@ function buildGradient(ctx, type, angle, color1, color2, size) {
         const g = ctx.createRadialGradient(size/2,size/2,0,size/2,size/2,size/2);
         g.addColorStop(0, color1); g.addColorStop(1, color2); return g;
     } else if (type === 'conic') {
-        // Canvas doesn't support conic natively the same way; approximate with radial
+        // Use native conic if available (Safari 15+, Chrome 99+, etc)
+        if (ctx.createConicGradient) {
+            const rad = ((angle - 90) * Math.PI) / 180; // offset to match CSS
+            const g = ctx.createConicGradient(rad, size/2, size/2);
+            g.addColorStop(0, color1); g.addColorStop(0.5, color2); g.addColorStop(1, color1); return g;
+        }
+        // Fallback to radial approximation
         const g = ctx.createRadialGradient(size/2,size/2,0,size/2,size/2,size*0.7);
         g.addColorStop(0, color1); g.addColorStop(0.5, color2); g.addColorStop(1, color1); return g;
     } else if (type === 'mesh') {
-        // Approximate mesh with radial from corners
-        return color1;
+        // Handled directly in drawing block because it requires multiple draws
+        return null; 
     } else { // linear
         const rad = (angle * Math.PI) / 180;
         const dx = Math.cos(rad) * size, dy = Math.sin(rad) * size;
@@ -1487,8 +1493,31 @@ async function exportPNG() {
         } else {
             let c1 = state.baseColor, c2 = state.baseColor2;
             if (state.baseFrame === 'glass') { c1 += '66'; c2 += '66'; }
-            bCtx.fillStyle = buildGradient(bCtx, state.gradientType, state.gradientAngle, c1, c2, bs);
-            bCtx.fillRect(0, 0, bs, bs);
+            
+            if (state.gradientType === 'mesh') {
+                // Mesh: four radials in corners (mirrors CSS)
+                bCtx.fillStyle = c1;
+                bCtx.fillRect(0, 0, bs, bs);
+                
+                const r1 = bCtx.createRadialGradient(0, 0, 0, 0, 0, bs * 0.8);
+                r1.addColorStop(0, c1); r1.addColorStop(1, 'transparent');
+                bCtx.fillStyle = r1; bCtx.fillRect(0, 0, bs, bs);
+
+                const r2 = bCtx.createRadialGradient(bs, 0, 0, bs, 0, bs * 0.8);
+                r2.addColorStop(0, c2); r2.addColorStop(1, 'transparent');
+                bCtx.fillStyle = r2; bCtx.fillRect(0, 0, bs, bs);
+
+                const r3 = bCtx.createRadialGradient(bs, bs, 0, bs, bs, bs * 0.8);
+                r3.addColorStop(0, c1); r3.addColorStop(1, 'transparent');
+                bCtx.fillStyle = r3; bCtx.fillRect(0, 0, bs, bs);
+
+                const r4 = bCtx.createRadialGradient(0, bs, 0, 0, bs, bs * 0.8);
+                r4.addColorStop(0, c2); r4.addColorStop(1, 'transparent');
+                bCtx.fillStyle = r4; bCtx.fillRect(0, 0, bs, bs);
+            } else {
+                bCtx.fillStyle = buildGradient(bCtx, state.gradientType, state.gradientAngle, c1, c2, bs);
+                bCtx.fillRect(0, 0, bs, bs);
+            }
         }
 
         // Vignette + Glow on temp canvas
@@ -1671,8 +1700,8 @@ async function exportPNG() {
             ctx.textBaseline = 'middle';
             if (state.showShadows) {
                 ctx.shadowColor = 'rgba(0,0,0,0.3)';
-                ctx.shadowBlur = 15;
-                ctx.shadowOffsetY = 10;
+                ctx.shadowBlur = SIZE * 0.015;
+                ctx.shadowOffsetY = SIZE * 0.01;
             }
             // Word-wrap the text
             const words = state.baseText.split(' ');
