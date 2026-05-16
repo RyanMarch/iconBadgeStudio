@@ -1502,33 +1502,121 @@ async function exportPNG() {
             gg.addColorStop(0,'rgba(255,255,255,0.4)'); gg.addColorStop(1,'transparent');
             bCtx.fillStyle = gg; bCtx.fillRect(0,0,bs,bs);
         }
-        // Glass frame overlays (mirrors .base-bg.frame-glass + .base-frame.glass)
+        // Noise Effect (mirrors .base-overlay.noise)
+        if (state.baseNoise) {
+            const noise = document.createElement('canvas');
+            noise.width = 128; noise.height = 128;
+            const nCtx = noise.getContext('2d');
+            const nid = nCtx.createImageData(128, 128);
+            for (let i = 0; i < nid.data.length; i += 4) {
+                const v = Math.random() * 255;
+                nid.data[i] = v; nid.data[i+1] = v; nid.data[i+2] = v;
+                nid.data[i+3] = 45; // ~0.18 opacity for export visibility
+            }
+            nCtx.putImageData(nid, 0, 0);
+            bCtx.fillStyle = bCtx.createPattern(noise, 'repeat');
+            bCtx.fillRect(0, 0, bs, bs);
+        }
+        // Frame overlays (mirrors .base-frame styles)
         if (state.baseFrame === 'glass') {
-            // 1. Subtle white fog (background-color: rgba(255,255,255,0.05))
+            // 1. Subtle white fog
             bCtx.fillStyle = 'rgba(255,255,255,0.05)';
             bCtx.fillRect(0, 0, bs, bs);
-            // 2. Glossy highlight gradient (linear-gradient 135deg, white→transparent)
+            // 2. Glossy highlight gradient
             const gfg = bCtx.createLinearGradient(0, 0, bs, bs);
             gfg.addColorStop(0, 'rgba(255,255,255,0.2)');
             gfg.addColorStop(1, 'transparent');
             bCtx.fillStyle = gfg;
             bCtx.fillRect(0, 0, bs, bs);
-            // 3. Inner glow (inset 0 0 20px rgba(255,255,255,0.2)) — radial from edges inward
+            // 3. Inner glow
             const ig = bCtx.createRadialGradient(bs/2,bs/2,bs*0.35,bs/2,bs/2,bs*0.71);
             ig.addColorStop(0,'transparent');
             ig.addColorStop(1,'rgba(255,255,255,0.2)');
             bCtx.fillStyle = ig;
             bCtx.fillRect(0, 0, bs, bs);
-            // 4. White border stroke (border: 5px solid rgba(255,255,255,0.5))
-            // lineWidth = frameThick*2 so half is inside the clip path (inner border effect)
+            // 4. White border stroke
             const frameThick = Math.max(6, bs * 0.012);
             bCtx.save();
             applyShapeClip(bCtx, bs, state.baseShape);
             bCtx.clip();
-            applyShapeClip(bCtx, bs, state.baseShape); // re-draw path for stroke
+            applyShapeClip(bCtx, bs, state.baseShape);
             bCtx.strokeStyle = 'rgba(255,255,255,0.5)';
             bCtx.lineWidth = frameThick * 2;
             bCtx.stroke();
+            bCtx.restore();
+        } else if (state.baseFrame === 'glossy') {
+            // Glossy Shine Effect (mirrors .base-frame.shine)
+            bCtx.save();
+            applyShapeClip(bCtx, bs, state.baseShape);
+            bCtx.clip();
+            const g = bCtx.createLinearGradient(0, -bs*0.5, bs*1.5, bs*0.5);
+            g.addColorStop(0, 'transparent');
+            g.addColorStop(0.33, 'rgba(255, 255, 255, 0)');
+            g.addColorStop(0.53, 'rgba(255, 255, 255, 0.4)');
+            g.addColorStop(1, 'rgba(255, 255, 255, 0.1)');
+            // Draw a large ellipse-like arc for the shine
+            bCtx.fillStyle = g;
+            bCtx.beginPath();
+            bCtx.arc(bs/2, -bs*0.1, bs * 1.1, 0, Math.PI * 2);
+            bCtx.fill();
+            bCtx.restore();
+        } else if (state.baseFrame === 'metallic') {
+            // Metallic Effect (mirrors .base-frame.metallic)
+            bCtx.save();
+            bCtx.globalAlpha = 0.8;
+            bCtx.globalCompositeOperation = 'overlay';
+            const mg = bCtx.createLinearGradient(0, 0, bs, bs);
+            mg.addColorStop(0, 'rgba(255, 255, 255, 0)');
+            mg.addColorStop(0.35, 'rgba(255, 255, 255, 0)');
+            mg.addColorStop(0.45, 'rgba(255, 255, 255, 0.4)');
+            mg.addColorStop(0.5, 'rgba(255, 255, 255, 0.1)');
+            mg.addColorStop(0.55, 'rgba(255, 255, 255, 0.4)');
+            mg.addColorStop(0.65, 'rgba(255, 255, 255, 0)');
+            mg.addColorStop(1, 'rgba(255, 255, 255, 0)');
+            bCtx.fillStyle = mg;
+            bCtx.fillRect(0, 0, bs, bs);
+            bCtx.restore();
+        } else if (state.baseFrame === 'border') {
+            // Border Effect (mirrors .base-frame.border)
+            const frameThick = Math.max(6, bs * 0.012);
+            bCtx.save();
+            applyShapeClip(bCtx, bs, state.baseShape);
+            bCtx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+            bCtx.lineWidth = frameThick * 2;
+            bCtx.stroke();
+            // Inset shadow simulation
+            const is = bCtx.createRadialGradient(bs/2,bs/2,bs*0.4,bs/2,bs/2,bs*0.5);
+            is.addColorStop(0, 'transparent');
+            is.addColorStop(1, 'rgba(0,0,0,0.2)');
+            bCtx.fillStyle = is;
+            bCtx.fillRect(0, 0, bs, bs);
+            bCtx.restore();
+        } else if (state.baseFrame === 'emboss') {
+            // Emboss Effect (mirrors .base-frame.emboss)
+            const thick = Math.max(6, bs * 0.01);
+            bCtx.save();
+            // Light top-left highlight
+            bCtx.save();
+            bCtx.translate(-thick/3, -thick/3);
+            applyShapeClip(bCtx, bs, state.baseShape);
+            bCtx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
+            bCtx.lineWidth = thick;
+            bCtx.stroke();
+            bCtx.restore();
+            // Dark bottom-right shadow
+            bCtx.save();
+            bCtx.translate(thick/3, thick/3);
+            applyShapeClip(bCtx, bs, state.baseShape);
+            bCtx.strokeStyle = 'rgba(0, 0, 0, 0.5)';
+            bCtx.lineWidth = thick;
+            bCtx.stroke();
+            bCtx.restore();
+            // Subtle inner vignette for depth
+            const es = bCtx.createRadialGradient(bs/2,bs/2,bs*0.4,bs/2,bs/2,bs*0.5);
+            es.addColorStop(0, 'transparent');
+            es.addColorStop(1, 'rgba(0,0,0,0.15)');
+            bCtx.fillStyle = es;
+            bCtx.fillRect(0, 0, bs, bs);
             bCtx.restore();
         }
         // CRT: scanlines + RGB sub-pixel grid (mirrors CSS background-size: 100% 3px, 3px 100%)
