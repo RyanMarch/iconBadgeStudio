@@ -1271,138 +1271,448 @@ function toggleScreenshotMode() {
     syncStateToURL();
 }
 
+// ─── Canvas Export Helpers ───────────────────────────────────────────────────
+
+// Polyfill ctx.roundRect for iOS Safari < 16 and any other older browsers
+if (typeof CanvasRenderingContext2D !== 'undefined' && !CanvasRenderingContext2D.prototype.roundRect) {
+    CanvasRenderingContext2D.prototype.roundRect = function(x, y, w, h, r) {
+        const R = (typeof r === 'number') ? r : (Array.isArray(r) ? r[0] : 0);
+        this.moveTo(x + R, y);
+        this.lineTo(x + w - R, y);
+        this.arcTo(x + w, y,     x + w, y + R,     R);
+        this.lineTo(x + w, y + h - R);
+        this.arcTo(x + w, y + h, x + w - R, y + h, R);
+        this.lineTo(x + R,     y + h);
+        this.arcTo(x,     y + h, x,     y + h - R, R);
+        this.lineTo(x,     y + R);
+        this.arcTo(x,     y,     x + R, y,         R);
+        this.closePath();
+    };
+}
+
+function applyShapeClip(ctx, size, shape, radius) {
+    // radius is the corner-radius fraction (0–0.5) for the shape
+    ctx.beginPath();
+    if (shape === 'circle') {
+        ctx.arc(size / 2, size / 2, size / 2, 0, Math.PI * 2);
+    } else if (shape === 'square') {
+        ctx.rect(0, 0, size, size);
+    } else if (shape === 'roundrect') {
+        const r = size * 0.12;
+        ctx.roundRect(0, 0, size, size, r);
+    } else { // squircle default
+        const r = size * 0.22;
+        ctx.roundRect(0, 0, size, size, r);
+    }
+    ctx.closePath();
+}
+
+function applyBadgeShapeClip(ctx, x, y, size, shape) {
+    ctx.beginPath();
+    const cx = x + size / 2, cy = y + size / 2, r = size / 2;
+    if (shape === 'circle') {
+        ctx.arc(cx, cy, r, 0, Math.PI * 2);
+    } else if (shape === 'square-hard') {
+        ctx.rect(x, y, size, size);
+    } else if (shape === 'roundrect') {
+        ctx.roundRect(x, y, size, size, size * 0.20);
+    } else if (shape === 'squircle') {
+        ctx.roundRect(x, y, size, size, size * 0.22);
+    } else if (shape === 'hexagon') {
+        const pts = [[0.5,0],[0.933,0.25],[0.933,0.75],[0.5,1],[0.067,0.75],[0.067,0.25]];
+        pts.forEach(([px,py],i) => i===0 ? ctx.moveTo(x+px*size,y+py*size) : ctx.lineTo(x+px*size,y+py*size));
+    } else if (shape === 'hexagon-h') {
+        const pts = [[0.25,0.067],[0.75,0.067],[1,0.5],[0.75,0.933],[0.25,0.933],[0,0.5]];
+        pts.forEach(([px,py],i) => i===0 ? ctx.moveTo(x+px*size,y+py*size) : ctx.lineTo(x+px*size,y+py*size));
+    } else if (shape === 'diamond') {
+        ctx.moveTo(x+size*0.5,y); ctx.lineTo(x+size,y+size*0.5); ctx.lineTo(x+size*0.5,y+size); ctx.lineTo(x,y+size*0.5);
+    } else if (shape === 'shield') {
+        ctx.moveTo(x,y); ctx.lineTo(x+size,y); ctx.lineTo(x+size,y+size*0.75); ctx.lineTo(x+size*0.5,y+size); ctx.lineTo(x,y+size*0.75);
+    } else {
+        ctx.arc(cx, cy, r, 0, Math.PI * 2);
+    }
+    ctx.closePath();
+}
+
+function loadImageCORS(src) {
+    return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+        img.onload = () => resolve(img);
+        img.onerror = () => {
+            // iOS Safari CORS cache bug: a previously-cached no-CORS response blocks
+            // the CORS-flagged request. Cache-bust to force a fresh fetch with CORS headers.
+            const bust = src.includes('?') ? '&_cb=' + Date.now() : '?_cb=' + Date.now();
+            const img2 = new Image();
+            img2.crossOrigin = 'anonymous';
+            img2.onload = () => resolve(img2);
+            img2.onerror = () => {
+                // Final fallback: no-CORS (safe for blob: and data: URLs which need no CORS)
+                const img3 = new Image();
+                img3.onload = () => resolve(img3);
+                img3.onerror = reject;
+                img3.src = src;
+            };
+            img2.src = src + bust;
+        };
+        img.src = src;
+    });
+}
+
+function buildGradient(ctx, type, angle, color1, color2, size) {
+    if (type === 'radial') {
+        const g = ctx.createRadialGradient(size/2,size/2,0,size/2,size/2,size/2);
+        g.addColorStop(0, color1); g.addColorStop(1, color2); return g;
+    } else if (type === 'conic') {
+        // Canvas doesn't support conic natively the same way; approximate with radial
+        const g = ctx.createRadialGradient(size/2,size/2,0,size/2,size/2,size*0.7);
+        g.addColorStop(0, color1); g.addColorStop(0.5, color2); g.addColorStop(1, color1); return g;
+    } else if (type === 'mesh') {
+        // Approximate mesh with radial from corners
+        return color1;
+    } else { // linear
+        const rad = (angle * Math.PI) / 180;
+        const dx = Math.cos(rad) * size, dy = Math.sin(rad) * size;
+        const g = ctx.createLinearGradient(size/2-dx/2,size/2-dy/2,size/2+dx/2,size/2+dy/2);
+        g.addColorStop(0, color1); g.addColorStop(1, color2); return g;
+    }
+}
+
+// Pixel-level filter — replaces ctx.filter which is unreliable in Safari on offscreen canvases
+function applyPixelFilter(canvas, effect) {
+    const c = canvas.getContext('2d');
+    const id = c.getImageData(0, 0, canvas.width, canvas.height);
+    const d = id.data;
+    for (let i = 0; i < d.length; i += 4) {
+        let r = d[i] / 255, g = d[i+1] / 255, b = d[i+2] / 255;
+        if (effect === 'deep-fried') {
+            // brightness(1.2)
+            r *= 1.2; g *= 1.2; b *= 1.2;
+            // contrast(300%): (v - 0.5) * 3 + 0.5
+            r = (r - 0.5) * 3 + 0.5;
+            g = (g - 0.5) * 3 + 0.5;
+            b = (b - 0.5) * 3 + 0.5;
+            // saturate(1000%): lerp toward luminance with factor -9 (1 - 10)
+            const lum = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+            r = lum + (r - lum) * 10;
+            g = lum + (g - lum) * 10;
+            b = lum + (b - lum) * 10;
+            // sepia(10%): slight warm tint
+            const sr = r * 0.9 + g * 0.09 + b * 0.01;
+            const sg = r * 0.07 + g * 0.91 + b * 0.02;
+            const sb = r * 0.06 + g * 0.09 + b * 0.85;
+            r = sr * 0.9 + r * 0.1;
+            g = sg * 0.9 + g * 0.1;
+            b = sb * 0.9 + b * 0.1;
+        } else if (effect === 'mono') {
+            // grayscale(100%)
+            const lum = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+            r = g = b = lum;
+            // contrast(1.2)
+            r = (r - 0.5) * 1.2 + 0.5;
+            g = (g - 0.5) * 1.2 + 0.5;
+            b = (b - 0.5) * 1.2 + 0.5;
+            // brightness(1.1)
+            r *= 1.1; g *= 1.1; b *= 1.1;
+        }
+        d[i]   = Math.max(0, Math.min(255, r * 255));
+        d[i+1] = Math.max(0, Math.min(255, g * 255));
+        d[i+2] = Math.max(0, Math.min(255, b * 255));
+    }
+    c.putImageData(id, 0, 0);
+}
+
 async function exportPNG() {
-    const captureArea = document.getElementById('capture-area');
-    const btn = document.querySelector('.btn-export');
-    const originalText = btn.innerHTML;
-    
-    // 1. Show the Loading Overlay
+    // Show overlay
     let overlay = document.getElementById('export-overlay');
     if (!overlay) {
         overlay = document.createElement('div');
         overlay.id = 'export-overlay';
         overlay.className = 'export-loading-overlay';
-        overlay.innerHTML = `
-            <div class="export-spinner"></div>
-            <div class="export-text">Polishing your icon...</div>
-        `;
+        overlay.innerHTML = `<div class="export-spinner"></div><div class="export-text" id="export-status-text">Rendering your icon...</div>`;
         document.body.appendChild(overlay);
     }
+    const statusText = overlay.querySelector('#export-status-text') || overlay.querySelector('.export-text');
     overlay.classList.add('active');
-    
-    btn.disabled = true;
 
-    // 2. Create a "Clean Room" for total isolation
-    const cleanRoom = document.createElement('div');
-    cleanRoom.style.cssText = `
-        position: fixed !important;
-        top: 0 !important;
-        left: 0 !important;
-        width: 1024px !important;
-        height: 1024px !important;
-        z-index: 999999 !important;
-        background: transparent !important;
-        overflow: visible !important;
-        display: flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        pointer-events: none !important;
-        opacity: 1 !important;
-        /* Reset any inherited sticky variables */
-        --sticky-scale: 1 !important;
-        --sticky-opacity: 1 !important;
-        --sticky-margin: 0 !important;
-        --sticky-actions-h: auto !important;
-        --sticky-actions-m: 0.5rem !important;
-    `;
-
-    // 3. Clone the icon and set to absolute pixel dimensions for high-quality capture
-    const clone = captureArea.cloneNode(true);
-    
-    clone.style.cssText = `
-        width: 1024px !important;
-        height: 1024px !important;
-        margin: 0 !important;
-        padding: 0 !important;
-        background: transparent !important;
-        border: none !important;
-        border-radius: 0 !important;
-        box-shadow: none !important;
-        overflow: visible !important;
-        flex: none !important;
-        max-width: none !important;
-        max-height: none !important;
-        position: relative !important;
-        transform: none !important; /* Extremely important: disable any sticky scaling */
-    `;
-
-    // Force internal elements to 1:1 and full size
-    const canvas = clone.querySelector('.icon-canvas');
-    if (canvas) {
-        canvas.style.cssText = `
-            width: 1024px !important;
-            height: 1024px !important;
-            max-width: none !important;
-            max-height: none !important;
-            transform: none !important;
-            margin: 0 !important;
-        `;
-    }
-
-    // Fix dynamic font sizes for the 1024px target
-    const baseText = clone.querySelector('.base-text');
-    if (baseText && state.baseText) {
-        // We use a reference size of 1024px for the export
-        const fontSize = calculateDynamicFontSize(state.baseText, 1024);
-        baseText.style.fontSize = fontSize + 'px';
-    }
-
-    const badgeSpan = clone.querySelector('.badge-icon span');
-    if (badgeSpan) {
-        // Recalculate badge font size for 1024px
-        let fontSize = 12; // Base size in cqw (percentage of canvas width)
-        if (state.icon.length > 1) {
-            const areaBase = (state.innerScale / 100) * 150; 
-            fontSize = Math.min(12, Math.sqrt(areaBase / (state.icon.length * 0.8)));
-            if (fontSize < 2) fontSize = 2;
-        }
-        badgeSpan.style.fontSize = (fontSize * 1024 / 100) + 'px';
-    }
-
-    cleanRoom.appendChild(clone);
-    document.body.appendChild(cleanRoom);
+    const btn = document.querySelector('.btn-export');
+    if (btn) btn.disabled = true;
 
     try {
-        // Ensure images are loaded inside the clone
-        const images = clone.querySelectorAll('img');
-        await Promise.all(Array.from(images).map(img => {
-            if (img.complete) return Promise.resolve();
-            return new Promise(resolve => { img.onload = resolve; img.onerror = resolve; });
-        }));
+        const SIZE = 1024;
+        const canvas = document.createElement('canvas');
+        canvas.width = SIZE; canvas.height = SIZE;
+        const ctx = canvas.getContext('2d');
 
-        // 4. Wait for browser to render the clean room
-        await new Promise(r => setTimeout(r, 800));
+        // ── 1. Transparent background (icon is self-contained) ──
+        ctx.clearRect(0, 0, SIZE, SIZE);
 
-        // 5. Capture the isolated room
-        const dataUrl = await domtoimage.toPng(cleanRoom, {
-            width: 1024,
-            height: 1024,
-            cacheBust: true
-        });
+        // ── 2. Calculate base dimensions (mirrors CSS) ──
+        const basePct = state.baseSize / 100;      // 0.5–1.0
+        const nudgePct = Math.max(0, Math.min(4, 100 - state.baseSize)) / 100;
+        const baseSize = SIZE * basePct;
+        const nudge = SIZE * nudgePct;
+        const pos = state.badgePosition;
 
-        const link = document.createElement('a');
-        link.download = `icon-${state.icon}-${state.shape}.png`;
-        link.href = dataUrl;
-        link.click();
+        // Base offset: base nudges AWAY from badge corner
+        let bx, by;
+        if (pos === 'top-left')    { bx = SIZE - baseSize - nudge; by = SIZE - baseSize - nudge; }
+        else if (pos === 'top-right')   { bx = nudge; by = SIZE - baseSize - nudge; }
+        else if (pos === 'bottom-left') { bx = SIZE - baseSize - nudge; by = nudge; }
+        else                            { bx = nudge; by = nudge; } // bottom-right (default)
 
-    } catch (err) {
+        // ── 3. Draw base layer ──
+        // Draw content to a temp canvas first so ctx.filter applies to the whole layer
+        if (statusText && state.customBaseIcon) statusText.textContent = 'Loading image...';
+        const bs = Math.ceil(baseSize);
+        const baseCanvas = document.createElement('canvas');
+        baseCanvas.width = bs; baseCanvas.height = bs;
+        const bCtx = baseCanvas.getContext('2d');
+
+        if (state.customBaseIcon) {
+            try {
+                const img = await loadImageCORS(state.customBaseIcon);
+                const zoom = (state.baseZoom || 100) / 100;
+                const scale = Math.max(bs / img.naturalWidth, bs / img.naturalHeight) * zoom;
+                const dw = img.naturalWidth * scale, dh = img.naturalHeight * scale;
+                const dx = (bs - dw) / 2, dy = (bs - dh) / 2;
+                // Glass reduces image opacity (mirrors .base-bg.frame-glass .base-icon { opacity: 0.85 })
+                if (state.baseFrame === 'glass') bCtx.globalAlpha = 0.85;
+                bCtx.drawImage(img, dx, dy, dw, dh);
+                bCtx.globalAlpha = 1;
+            } catch(e) {
+                bCtx.fillStyle = '#1c1c1c';
+                bCtx.fillRect(0, 0, bs, bs);
+            }
+        } else {
+            let c1 = state.baseColor, c2 = state.baseColor2;
+            if (state.baseFrame === 'glass') { c1 += '66'; c2 += '66'; }
+            bCtx.fillStyle = buildGradient(bCtx, state.gradientType, state.gradientAngle, c1, c2, bs);
+            bCtx.fillRect(0, 0, bs, bs);
+        }
+
+        // Vignette + Glow on temp canvas
+        if (state.baseVignette) {
+            const vg = bCtx.createRadialGradient(bs/2,bs/2,bs*0.3,bs/2,bs/2,bs*0.7);
+            vg.addColorStop(0,'transparent'); vg.addColorStop(1,'rgba(0,0,0,0.4)');
+            bCtx.fillStyle = vg; bCtx.fillRect(0,0,bs,bs);
+        }
+        if (state.baseGlow) {
+            const gg = bCtx.createRadialGradient(bs/2,bs/2,0,bs/2,bs/2,bs*0.5);
+            gg.addColorStop(0,'rgba(255,255,255,0.4)'); gg.addColorStop(1,'transparent');
+            bCtx.fillStyle = gg; bCtx.fillRect(0,0,bs,bs);
+        }
+        // Glass frame overlays (mirrors .base-bg.frame-glass + .base-frame.glass)
+        if (state.baseFrame === 'glass') {
+            // 1. Subtle white fog (background-color: rgba(255,255,255,0.05))
+            bCtx.fillStyle = 'rgba(255,255,255,0.05)';
+            bCtx.fillRect(0, 0, bs, bs);
+            // 2. Glossy highlight gradient (linear-gradient 135deg, white→transparent)
+            const gfg = bCtx.createLinearGradient(0, 0, bs, bs);
+            gfg.addColorStop(0, 'rgba(255,255,255,0.2)');
+            gfg.addColorStop(1, 'transparent');
+            bCtx.fillStyle = gfg;
+            bCtx.fillRect(0, 0, bs, bs);
+            // 3. Inner glow (inset 0 0 20px rgba(255,255,255,0.2)) — radial from edges inward
+            const ig = bCtx.createRadialGradient(bs/2,bs/2,bs*0.35,bs/2,bs/2,bs*0.71);
+            ig.addColorStop(0,'transparent');
+            ig.addColorStop(1,'rgba(255,255,255,0.2)');
+            bCtx.fillStyle = ig;
+            bCtx.fillRect(0, 0, bs, bs);
+            // 4. White border stroke (border: 5px solid rgba(255,255,255,0.5))
+            // lineWidth = frameThick*2 so half is inside the clip path (inner border effect)
+            const frameThick = Math.max(6, bs * 0.012);
+            bCtx.save();
+            applyShapeClip(bCtx, bs, state.baseShape);
+            bCtx.clip();
+            applyShapeClip(bCtx, bs, state.baseShape); // re-draw path for stroke
+            bCtx.strokeStyle = 'rgba(255,255,255,0.5)';
+            bCtx.lineWidth = frameThick * 2;
+            bCtx.stroke();
+            bCtx.restore();
+        }
+        // CRT: scanlines + RGB sub-pixel grid (mirrors CSS background-size: 100% 3px, 3px 100%)
+        if (state.baseCRT) {
+            bCtx.save();
+            bCtx.globalAlpha = 0.8;
+            // Horizontal scanlines: dark stripe on bottom 1.5px of every 3px row
+            bCtx.fillStyle = 'rgba(0, 0, 0, 0.15)';
+            for (let y = 1; y < bs; y += 3) {
+                bCtx.fillRect(0, y, bs, 1.5);
+            }
+            // RGB sub-pixel columns: R/G/B tint repeating every 3px
+            for (let x = 0; x < bs; x += 3) {
+                bCtx.fillStyle = 'rgba(255, 0, 0, 0.04)';
+                bCtx.fillRect(x,     0, 1, bs);
+                bCtx.fillStyle = 'rgba(0, 255, 0, 0.01)';
+                bCtx.fillRect(x + 1, 0, 1, bs);
+                bCtx.fillStyle = 'rgba(0, 0, 255, 0.04)';
+                bCtx.fillRect(x + 2, 0, 1, bs);
+            }
+            // Ambient darkening overlay (replaces the ::after flicker at its midpoint)
+            bCtx.fillStyle = 'rgba(18, 16, 16, 0.12)';
+            bCtx.fillRect(0, 0, bs, bs);
+            bCtx.restore();
+        }
+
+        // Composite base canvas onto main canvas with shape clip + pixel filters
+        // Apply effects directly to baseCanvas pixels (avoids ctx.filter Safari bug)
+        if (state.baseDeepFried) applyPixelFilter(baseCanvas, 'deep-fried');
+        else if (state.baseMono)  applyPixelFilter(baseCanvas, 'mono');
+
+        ctx.save();
+        ctx.translate(bx, by);
+        applyShapeClip(ctx, bs, state.baseShape);
+        ctx.clip();
+        if (state.showShadows) {
+            ctx.shadowColor = 'rgba(0,0,0,0.3)';
+            ctx.shadowBlur = bs * 0.05;
+            ctx.shadowOffsetY = bs * 0.03;
+        }
+        ctx.drawImage(baseCanvas, 0, 0, bs, bs);
+        ctx.shadowColor = 'transparent';
+        ctx.restore();
+
+        // ── 4. Draw base text ──
+        if (state.baseText && state.baseText.trim()) {
+            ctx.save();
+            const fontSize = calculateDynamicFontSize(state.baseText, SIZE);
+            ctx.font = `700 ${fontSize}px Outfit, sans-serif`;
+            ctx.fillStyle = state.baseTextColor || '#ffffff';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            if (state.showShadows) {
+                ctx.shadowColor = 'rgba(0,0,0,0.3)';
+                ctx.shadowBlur = 15;
+                ctx.shadowOffsetY = 10;
+            }
+            // Word-wrap the text
+            const words = state.baseText.split(' ');
+            const lines = [];
+            let current = '';
+            for (const w of words) {
+                const test = current ? current + ' ' + w : w;
+                if (ctx.measureText(test).width > baseSize * 0.85 && current) {
+                    lines.push(current); current = w;
+                } else { current = test; }
+            }
+            if (current) lines.push(current);
+            const lineH = fontSize * 0.95;
+            const totalH = lines.length * lineH;
+            const startY = by + baseSize/2 - totalH/2 + lineH/2;
+            lines.forEach((line, i) => {
+                ctx.fillText(line, bx + baseSize/2, startY + i * lineH);
+            });
+            ctx.restore();
+        }
+
+        // ── 5. Draw badge ──
+        if (pos !== 'none') {
+            if (statusText) statusText.textContent = 'Rendering badge...';
+            const badgePct = state.badgeSize / 100;
+            const badgeSize = SIZE * badgePct;
+            const badgeOffset = SIZE * 0.08;
+
+            let bdgX, bdgY;
+            if (pos === 'top-left')    { bdgX = badgeOffset; bdgY = badgeOffset; }
+            else if (pos === 'top-right')   { bdgX = SIZE - badgeSize - badgeOffset; bdgY = badgeOffset; }
+            else if (pos === 'bottom-left') { bdgX = badgeOffset; bdgY = SIZE - badgeSize - badgeOffset; }
+            else                            { bdgX = SIZE - badgeSize - badgeOffset; bdgY = SIZE - badgeSize - badgeOffset; }
+
+            // Badge pivot = its center; rotation mirrors CSS transform: rotate(Ndeg)
+            const bdgCx = bdgX + badgeSize / 2;
+            const bdgCy = bdgY + badgeSize / 2;
+            const rotRad = ((state.rotation || 0) * Math.PI) / 180;
+
+            ctx.save();
+            // Translate to badge center, rotate, then draw badge at (-size/2, -size/2)
+            ctx.translate(bdgCx, bdgCy);
+            ctx.rotate(rotRad);
+
+            const hbs = badgeSize / 2; // half badge size — local origin coords
+
+            if (state.showShadows) {
+                ctx.shadowColor = 'rgba(0,0,0,0.4)';
+                ctx.shadowBlur = badgeSize * 0.12;
+                ctx.shadowOffsetY = badgeSize * 0.06;
+            }
+
+            // Draw badge background shape (centered on local origin)
+            applyBadgeShapeClip(ctx, -hbs, -hbs, badgeSize, state.shape);
+            ctx.fillStyle = state.color;
+            ctx.fill();
+            ctx.shadowColor = 'transparent';
+
+            // Clip icon to badge shape
+            ctx.clip();
+
+            const iconScale = state.innerScale / 100;
+            const iconSize = badgeSize * iconScale * 0.85;
+            const iconColor = getContrastColor(state.color);
+            // Icon centered at local origin
+            const iconOff = -iconSize / 2;
+
+            const svgEl = document.querySelector('#badge-icon-target svg');
+            if (svgEl) {
+                const svgClone = svgEl.cloneNode(true);
+                svgClone.setAttribute('width', iconSize);
+                svgClone.setAttribute('height', iconSize);
+                svgClone.setAttribute('color', iconColor);
+                svgClone.querySelectorAll('[stroke="currentColor"]').forEach(el => el.setAttribute('stroke', iconColor));
+                svgClone.querySelectorAll('[fill="currentColor"]').forEach(el => el.setAttribute('fill', iconColor));
+                const svgStr = new XMLSerializer().serializeToString(svgClone);
+                const blob = new Blob([svgStr], {type: 'image/svg+xml'});
+                const url = URL.createObjectURL(blob);
+                try {
+                    const svgImg = await loadImageCORS(url);
+                    if (state.shape === 'diamond') {
+                        ctx.scale(0.7, 0.7);
+                        ctx.drawImage(svgImg, iconOff, iconOff, iconSize, iconSize);
+                    } else {
+                        ctx.drawImage(svgImg, iconOff, iconOff, iconSize, iconSize);
+                    }
+                } finally {
+                    URL.revokeObjectURL(url);
+                }
+            } else {
+                const spanEl = document.querySelector('#badge-icon-target span');
+                if (spanEl) {
+                    let fs = 12;
+                    if (state.icon.length > 1) {
+                        const areaBase = (state.innerScale / 100) * 150;
+                        fs = Math.min(12, Math.sqrt(areaBase / (state.icon.length * 0.8)));
+                        if (fs < 2) fs = 2;
+                    }
+                    ctx.font = `700 ${fs * SIZE / 100}px Outfit, sans-serif`;
+                    ctx.fillStyle = iconColor;
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText(state.icon, 0, 0);
+                }
+            }
+
+            ctx.restore();
+        }
+
+        // ── 6. Download ──
+        if (statusText) statusText.textContent = 'Saving...';
+        await new Promise(r => setTimeout(r, 100));
+
+        canvas.toBlob(blob => {
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `icon-${state.icon}-${state.shape}.png`;
+            a.click();
+            setTimeout(() => URL.revokeObjectURL(url), 5000);
+        }, 'image/png');
+
+    } catch(err) {
         console.error('Export failed:', err);
-        alert('Export failed. Try taking a manual screenshot.');
+        alert('Export failed: ' + err.message);
     } finally {
-        // 6. Cleanup
-        if (cleanRoom.parentNode) document.body.removeChild(cleanRoom);
         overlay.classList.remove('active');
-        btn.disabled = false;
+        if (btn) btn.disabled = false;
     }
 }
 
