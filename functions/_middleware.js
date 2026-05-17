@@ -61,6 +61,10 @@ export async function onRequest(context) {
 <head>
     <meta charset="UTF-8">
     <title>${title}</title>
+    <link rel="canonical" href="https://iconstudio.ryanmarch.me/">
+    <meta name="robots" content="noindex, follow">
+    <meta property="og:site_name" content="Icon Studio">
+    <meta property="og:url" content="${request.url}">
     <meta property="og:image" content="${imageUrl}">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
