@@ -2462,11 +2462,15 @@ button,
         border-top-right-radius: 0 !important;
         margin-left: 0 !important;
         margin-right: 0 !important;
-        margin-top: calc(-1.5rem - var(--safe-top)) !important; /* Stretches panel background under status bar */
+        margin-top: calc(-1 * var(--safe-top)) !important; /* Aligns panel top exactly with the top of screen */
         margin-bottom: 1.5rem !important; /* Retains vital spacing for document flow */
-        padding-top: calc(1.5rem + 2 * var(--safe-top)) !important; /* Pushes header content below the physical notch */
+        padding-top: calc(1.25rem + var(--safe-top)) !important; /* Pushes header content completely clear of status indicators */
         top: calc(-5rem - var(--safe-top)) !important; /* Offsets header text off-screen perfectly when stuck */
         transition: none !important; /* Prevent jerky movement in PWA */
+    }
+    
+    .preview-header {
+        margin-top: 0 !important; /* Clears negative margin-top from base styles */
     }
     
     .mobile-drawer .drawer-content {
@@ -2500,11 +2504,15 @@ body.standalone-mode .preview-section {
     border-top-right-radius: 0 !important;
     margin-left: 0 !important;
     margin-right: 0 !important;
-    margin-top: calc(-1.5rem - var(--safe-top)) !important; /* Stretches panel background under status bar */
+    margin-top: calc(-1 * var(--safe-top)) !important; /* Aligns panel top exactly with the top of screen */
     margin-bottom: 1.5rem !important; /* Retains vital spacing for document flow */
-    padding-top: calc(1.5rem + 2 * var(--safe-top)) !important; /* Pushes header content below the physical notch */
+    padding-top: calc(1.25rem + var(--safe-top)) !important; /* Pushes header content completely clear of status indicators */
     top: calc(-5rem - var(--safe-top)) !important; /* Offsets header text off-screen perfectly when stuck */
     transition: none !important; /* Prevent jerky movement in PWA */
+}
+
+body.standalone-mode .preview-header {
+    margin-top: 0 !important; /* Clears negative margin-top from base styles */
 }
 
 body.standalone-mode .mobile-drawer .drawer-content {
