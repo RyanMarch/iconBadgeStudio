@@ -2289,3 +2289,11 @@ body.screenshot-mode .badge-container {
         width: auto !important;
     }
 }
+
+/* Hide Screenshot Mode on all touch-primary devices (like iPad, mobile) */
+@media (pointer: coarse) {
+    .preview-actions .btn-screenshot-mode {
+        display: none !important;
+    }
+}
+
