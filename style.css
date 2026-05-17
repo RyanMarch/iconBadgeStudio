@@ -2290,8 +2290,19 @@ body.screenshot-mode .badge-container {
     }
 }
 
-/* Hide Screenshot Mode on all touch-primary devices (like iPad, mobile) */
+/* Hide Screenshot Mode on all touch-primary or touch-emulated devices (like iPad, mobile) */
+.touch-device .preview-actions .btn-screenshot-mode {
+    display: none !important;
+}
+
 @media (pointer: coarse) {
+    .preview-actions .btn-screenshot-mode {
+        display: none !important;
+    }
+}
+
+/* Hide Screenshot Mode on viewports under 1200px (covers iPad 11-inch landscape in simulators and small viewports) */
+@media (max-width: 1200px) {
     .preview-actions .btn-screenshot-mode {
         display: none !important;
     }

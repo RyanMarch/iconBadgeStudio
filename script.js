@@ -131,6 +131,11 @@ function loadStateFromURL() {
 }
 
 function init() {
+    // Detect touch-primary or touch-emulated devices (like iPad, mobile)
+    if ('ontouchstart' in window || navigator.maxTouchPoints > 0 || navigator.msMaxTouchPoints > 0) {
+        document.body.classList.add('touch-device');
+    }
+
     loadStateFromURL();
     // Render colors
     const colorContainer = document.getElementById('color-presets');
