@@ -39,7 +39,7 @@ A premium, web-based tool for creating professional icons with customizable badg
 <div align="center">
   <figure>
     <a href="https://iconstudio.ryanmarch.me">
-      <img width="1582" height="1061" alt="icon-studio-multi-theme-framed" src="https://github.com/user-attachments/assets/b647a410-20cb-4353-87d6-ef4c0cf371b3" />
+      <img width="1200" alt="icon-studio-multi-theme-framed" src="https://github.com/user-attachments/assets/b647a410-20cb-4353-87d6-ef4c0cf371b3" />
     </a><br/>
     <figcaption><em>Easily edit icons and customize to perfection.</em></figcaption>
   </figure>
@@ -59,14 +59,12 @@ A premium, web-based tool for creating professional icons with customizable badg
 ### Progressive Web App (PWA) & Mobile Experience
 - **Standalone Installation**: Install Icon Studio directly to your device home screen on iOS, iPadOS, Android, and Desktop for a native app experience.
 - **Full Offline Support**: Continue designing without an active network connection, powered by background service worker caching.
-- **Smarter Install Prompts**: Custom, non-intrusive step-by-step guides helping mobile users add the app to their home screens.
-- **iPad and Tablet Screen Calibration**: Responsive styling optimized specifically for large touch displays in both landscape and portrait orientations.
 - **Sticky Mobile Preview**: A pinned canvas preview on mobile ensures your design is always visible while adjusting settings.
 
 <div align="center">
   <figure>
     <a href="https://iconstudio.ryanmarch.me/">
-      <img width="728" height="1308" alt="icon-studio-pwa" src="https://github.com/user-attachments/assets/b5a3ac1d-d19e-4475-8b28-28e4d506525e" />
+      <img height="800px" alt="icon-studio-pwa" src="https://github.com/user-attachments/assets/b5a3ac1d-d19e-4475-8b28-28e4d506525e" />
     </a><br/>
       <figcaption><em>Add to your device for the best editing experience.</em></figcaption>
     </figure>
@@ -78,8 +76,8 @@ A premium, web-based tool for creating professional icons with customizable badg
 ### Sharing & Exporting
 - **URL-Synced State**: Every adjustment is instantly reflected in the URL. Share your exact design with a single link.
 - **Cloud-Powered Sharing**: Uploaded images are hosted via Cloudinary for seamless cross-device sharing.
-- **High-Quality Export**: Pixel-perfect, high-resolution (1024x1024) PNG exports with support for advanced effects, frame styles, and rotations.
-- **Privacy First**: Local storage fallback ensures your work is saved even if cloud services are unavailable.
+- **High-Quality Export**: Pixel-perfect, high-resolution (1024x1024) PNG exports.
+- **Local First**: Local storage fallback ensures your work is saved even if cloud services are unavailable.
 
 <hr/>
 
