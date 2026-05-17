@@ -9,6 +9,7 @@ Thumbs.db
 
 # VS Code workspace files
 *.code-workspace
+.vscode/
 
 # Node
 node_modules/

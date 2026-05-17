@@ -18,41 +18,107 @@
     --shadow-color: rgba(0, 0, 0, 0.5);
     --sidebar-bg: rgba(2, 6, 23, 0.4);
     --base-nudge: 4%;
+
+    /* iOS PWA / Upsell prompt variables */
+    --ios-prompt-bg: rgba(15, 23, 42, 0.65);
+    --ios-prompt-border: rgba(255, 255, 255, 0.08);
+    --ios-prompt-shadow: 0 12px 30px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.04) inset;
+    --ios-prompt-close-bg: rgba(255, 255, 255, 0.12);
+    --ios-prompt-close-border: rgba(255, 255, 255, 0.2);
+    --ios-prompt-close-color: #ffffff;
+    --ios-prompt-close-hover-bg: rgba(255, 255, 255, 0.2);
+    --ios-prompt-steps-border: rgba(255, 255, 255, 0.08);
+    --ios-prompt-icon-span-bg: rgba(255, 255, 255, 0.05);
+    --ios-prompt-icon-span-border: rgba(255, 255, 255, 0.12);
+
+    /* Suggestions Dropdown variables */
+    --dropdown-bg: rgba(30, 41, 59, 0.95);
+    --dropdown-border: var(--glass-border);
+    --dropdown-item-hover-bg: var(--accent);
+    --dropdown-item-hover-color: #ffffff;
+    --seo-bg-open: rgba(15, 23, 42, 0.35);
+
+    /* Interactive state variables */
+    --control-active-bg: rgba(59, 130, 246, 0.2);
 }
 
 [data-theme="light"] {
     --bg-color: #8aaacc;
-    --panel-bg: rgba(255, 255, 255, 0.8);
-    --control-bg: rgba(241, 245, 249, 0.8);
-    --control-bg-hover: rgba(226, 232, 240, 0.9);
+    --panel-bg: rgba(255, 255, 255, 0.75);
+    --control-bg: #f1f5f9;
+    --control-bg-hover: #e2e8f0;
     --accent: #2563eb;
     --text-main: #0f172a;
-    --text-muted: #475569;
-    --glass-border: rgba(0, 0, 0, 0.1);
-    --bg-gradient-1: rgba(37, 99, 235, 0.05);
-    --bg-gradient-2: rgba(124, 58, 237, 0.05);
+    --text-muted: #64748b;
+    --glass-border: rgba(15, 23, 42, 0.08);
+    --bg-gradient-1: rgba(255, 255, 255, 0.12);
+    --bg-gradient-2: rgba(37, 99, 235, 0.08);
     --input-text: #0f172a;
-    --preview-canvas-bg: white;
-    --shadow-color: rgba(0, 0, 0, 0.1);
-    --sidebar-bg: rgba(0, 0, 0, 0.04);
+    --preview-canvas-bg: #ffffff;
+    --shadow-color: rgba(15, 23, 42, 0.05);
+    --sidebar-bg: #ffffff;
+
+    /* iOS PWA / Upsell prompt variables */
+    --ios-prompt-bg: rgba(255, 255, 255, 0.9);
+    --ios-prompt-border: rgba(15, 23, 42, 0.08);
+    --ios-prompt-shadow: 0 12px 30px rgba(15, 23, 42, 0.08), 0 0 0 1px rgba(255, 255, 255, 0.4) inset;
+    --ios-prompt-close-bg: rgba(15, 23, 42, 0.08);
+    --ios-prompt-close-border: rgba(15, 23, 42, 0.15);
+    --ios-prompt-close-color: #0f172a;
+    --ios-prompt-close-hover-bg: rgba(15, 23, 42, 0.15);
+    --ios-prompt-steps-border: rgba(15, 23, 42, 0.06);
+    --ios-prompt-icon-span-bg: rgba(15, 23, 42, 0.03);
+    --ios-prompt-icon-span-border: rgba(15, 23, 42, 0.08);
+
+    /* Suggestions Dropdown variables */
+    --dropdown-bg: rgba(255, 255, 255, 0.95);
+    --dropdown-border: var(--glass-border);
+    --dropdown-item-hover-bg: var(--accent);
+    --dropdown-item-hover-color: #ffffff;
+    --seo-bg-open: rgba(255, 255, 255, 0.45);
+
+    /* Interactive state variables */
+    --control-active-bg: rgba(37, 99, 235, 0.12);
 }
 
 @media (prefers-color-scheme: light) {
     :root:not([data-theme]) {
         --bg-color: #8aaacc;
-        --panel-bg: rgba(255, 255, 255, 0.8);
-        --control-bg: rgba(241, 245, 249, 0.8);
-        --control-bg-hover: rgba(226, 232, 240, 0.9);
+        --panel-bg: rgba(255, 255, 255, 0.75);
+        --control-bg: #f1f5f9;
+        --control-bg-hover: #e2e8f0;
         --accent: #2563eb;
         --text-main: #0f172a;
-        --text-muted: #475569;
-        --glass-border: rgba(0, 0, 0, 0.1);
-        --bg-gradient-1: rgba(37, 99, 235, 0.05);
-        --bg-gradient-2: rgba(124, 58, 237, 0.05);
+        --text-muted: #64748b;
+        --glass-border: rgba(15, 23, 42, 0.08);
+        --bg-gradient-1: rgba(255, 255, 255, 0.12);
+        --bg-gradient-2: rgba(37, 99, 235, 0.08);
         --input-text: #0f172a;
-        --preview-canvas-bg: white;
-        --shadow-color: rgba(0, 0, 0, 0.1);
-        --sidebar-bg: rgba(0, 0, 0, 0.04);
+        --preview-canvas-bg: #ffffff;
+        --shadow-color: rgba(15, 23, 42, 0.05);
+        --sidebar-bg: #ffffff;
+
+        /* iOS PWA / Upsell prompt variables */
+        --ios-prompt-bg: rgba(255, 255, 255, 0.9);
+        --ios-prompt-border: rgba(15, 23, 42, 0.08);
+        --ios-prompt-shadow: 0 12px 30px rgba(15, 23, 42, 0.08), 0 0 0 1px rgba(255, 255, 255, 0.4) inset;
+        --ios-prompt-close-bg: rgba(15, 23, 42, 0.08);
+        --ios-prompt-close-border: rgba(15, 23, 42, 0.15);
+        --ios-prompt-close-color: #0f172a;
+        --ios-prompt-close-hover-bg: rgba(15, 23, 42, 0.15);
+        --ios-prompt-steps-border: rgba(15, 23, 42, 0.06);
+        --ios-prompt-icon-span-bg: rgba(15, 23, 42, 0.03);
+        --ios-prompt-icon-span-border: rgba(15, 23, 42, 0.08);
+
+        /* Suggestions Dropdown variables */
+        --dropdown-bg: rgba(255, 255, 255, 0.95);
+        --dropdown-border: var(--glass-border);
+        --dropdown-item-hover-bg: var(--accent);
+        --dropdown-item-hover-color: #ffffff;
+        --seo-bg-open: rgba(255, 255, 255, 0.45);
+
+        /* Interactive state variables */
+        --control-active-bg: rgba(37, 99, 235, 0.12);
     }
 }
 
@@ -71,6 +137,7 @@ body {
     background-attachment: fixed;
     color: var(--text-main);
     height: 100vh;
+    height: 100dvh;
     width: 100vw;
     overflow: hidden; /* Body never scrolls */
     display: flex;
@@ -96,6 +163,7 @@ body {
     body {
         height: auto;
         min-height: 100vh;
+        min-height: 100dvh;
         overflow-y: auto;
         padding: 1rem;
     }
@@ -152,7 +220,6 @@ h1 {
         flex-direction: row;
         align-items: center;
         gap: 1rem;
-        /* margin-bottom: 1.25rem; */
         transition: opacity 0.2s ease, transform 0.2s ease;
     }
     
@@ -623,9 +690,9 @@ h1 {
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
-    gap: 1.25rem;
+    gap: 0.7rem;
     border-left: 1px solid var(--glass-border);
-    padding: 2rem 1.5rem;
+    padding: 1rem 1.5rem;
     height: 100%;
     overflow-y: auto;
     overflow-x: hidden;
@@ -634,6 +701,9 @@ h1 {
     zoom: var(--app-scale);
     background: var(--sidebar-bg); /* Use theme-aware variable */
     box-shadow: inset 10px 0 30px -10px rgba(0, 0, 0, 0.3); /* Depth shadow */
+}
+.badge-controls {
+    gap: 0.5rem
 }
 .controls-footer {
     flex-shrink: 0;
@@ -812,6 +882,10 @@ select {
     font-family: inherit;
     outline: none;
     transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+    font-size: 16px; /* Prevents auto-zooming on focus in iOS Safari */
+}
+input[type="text"]{
+    max-height: 35px !important;
 }
 
 input[type="text"]:focus {
@@ -857,7 +931,7 @@ input[type="text"]:focus {
 
 .shape-btn.active {
     border-color: var(--accent);
-    background: rgba(59, 130, 246, 0.2);
+    background: var(--control-active-bg);
     color: var(--text-main);
 }
 
@@ -1116,8 +1190,6 @@ input[type="text"]:focus {
     }
 }
 
-/* button.primary removed in favor of .btn-export and .btn-upload */
-
 button.secondary {
     font-size: 0.95rem;
     background: transparent;
@@ -1139,8 +1211,8 @@ button.secondary {
 }
 
 button.secondary:hover {
-    background: rgba(255, 255, 255, 0.08);
-    border-color: rgba(255, 255, 255, 0.25);
+    background: var(--control-bg-hover);
+    border-color: var(--accent);
 }
 
 /* --- New Button Hierarchies --- */
@@ -1616,6 +1688,7 @@ button.danger:hover {
     align-items: center !important;
     justify-content: center !important;
     height: 100vh !important;
+    height: 100dvh !important;
     width: 100vw !important;
     max-width: none !important;
     margin: 0 !important;
@@ -1646,6 +1719,8 @@ button.danger:hover {
     margin: auto !important;
     width: 85vmin !important;
     height: 85vmin !important;
+    max-width: none !important;
+    max-height: none !important;
     min-width: unset !important;
     min-height: unset !important;
     aspect-ratio: 1/1 !important;
@@ -1683,14 +1758,17 @@ button.danger:hover {
 
 @media (max-width: 1150px) {
     .screenshot-mode .icon-canvas-wrapper {
-        width: 90vw !important;
-        height: 90vw !important;
+        width: 85vmin !important;
+        height: 85vmin !important;
+        max-width: none !important;
+        max-height: none !important;
     }
     
     body.screenshot-mode {
         overflow: hidden !important;
         padding: 0 !important;
         height: 100vh !important;
+        height: 100dvh !important;
         width: 100vw !important;
     }
 }
@@ -1740,15 +1818,16 @@ button.danger:hover {
     top: calc(100% + 5px);
     left: 0;
     right: 0;
-    background: rgba(30, 41, 59, 0.95);
+    background: var(--dropdown-bg);
     backdrop-filter: blur(16px);
-    border: 1px solid var(--glass-border);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--dropdown-border);
     border-radius: 10px;
     max-height: 240px;
     overflow-y: auto;
     z-index: 100;
     display: none;
-    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 10px 25px -5px var(--shadow-color);
     padding: 0.5rem;
 }
 
@@ -1770,8 +1849,8 @@ button.danger:hover {
 }
 
 .dropdown-item:hover, .dropdown-item.selected {
-    background: rgba(59, 130, 246, 0.2);
-    color: white;
+    background: var(--dropdown-item-hover-bg);
+    color: var(--dropdown-item-hover-color);
 }
 
 .dropdown-item svg {
@@ -1784,7 +1863,7 @@ button.danger:hover {
 }
 
 .icon-dropdown::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.1);
+    background: var(--glass-border);
     border-radius: 10px;
 }
 
@@ -1841,9 +1920,9 @@ input[type="range"] {
 
 .drawer-trigger:hover,
 .drawer-trigger.active {
-    background: rgba(255, 255, 255, 0.05);
-    color: white;
-    border-color: rgba(255, 255, 255, 0.2);
+    background: var(--control-bg-hover);
+    color: var(--text-main);
+    border-color: var(--accent);
 }
 
 .drawer-trigger:active {
@@ -1920,12 +1999,6 @@ input[type="range"] {
     }
 }
 
-/* Flourish Animations */
-@keyframes bg-shift {
-    0% { background-position: 0% 0%; }
-    100% { background-position: 100% 100%; }
-}
-
 /* Export Loading Overlay */
 .export-loading-overlay {
     position: fixed;
@@ -1933,6 +2006,7 @@ input[type="range"] {
     left: 0;
     width: 100vw;
     height: 100vh;
+    height: 100dvh;
     background: rgba(2, 6, 23, 0.8);
     backdrop-filter: blur(30px);
     display: none;
@@ -1975,6 +2049,7 @@ body.screenshot-mode {
     overflow: hidden !important;
     padding: 0 !important;
     height: 100vh !important;
+    height: 100dvh !important;
     width: 100vw !important;
     box-shadow: none !important;
 }
@@ -2032,6 +2107,7 @@ body.screenshot-mode .badge-container {
 @media (orientation: landscape) and (max-height: 500px) {
     body {
         height: 100vh;
+        height: 100dvh;
         overflow: hidden;
         padding: 0 !important;
         margin: 0 !important;
@@ -2041,17 +2117,18 @@ body.screenshot-mode .badge-container {
         grid-template-columns: 1.15fr 1fr;
         grid-template-rows: auto;
         height: 100vh;
+        height: 100dvh;
         overflow-y: auto;
         overflow-x: hidden;
-        border-radius: 0 !important;
-        max-width: none !important;
+        border-radius: 0;
+        max-width: none;
         gap: 0;
         align-items: start;
         background: var(--bg-color);
-        border: none !important;
-        box-shadow: none !important;
-        padding: 0 !important;
-        margin: 0 !important;
+        border: none;
+        box-shadow: none;
+        padding: 0;
+        margin: 0;
     }
 
     .preview-section {
@@ -2060,6 +2137,7 @@ body.screenshot-mode .badge-container {
         position: sticky;
         top: 0;
         height: 100vh;
+        height: 100dvh;
         padding: 1.25rem 1.25rem;
         display: flex;
         flex-direction: column;
@@ -2067,10 +2145,10 @@ body.screenshot-mode .badge-container {
         background: var(--panel-bg);
         backdrop-filter: blur(20px);
         -webkit-backdrop-filter: blur(20px);
-        margin: 0 !important;
+        margin: 0;
         border-bottom: none;
         border-right: 1px solid var(--glass-border);
-        border-radius: 0 !important;
+        border-radius: 0;
         z-index: 100;
         overflow: hidden;
     }
@@ -2120,7 +2198,7 @@ body.screenshot-mode .badge-container {
     .shape-grid-4x2, 
     .effects-grid,
     .shape-grid-2x2 {
-        grid-template-columns: repeat(2, 1fr) !important;
+        grid-template-columns: repeat(2, 1fr);
     }
 
     .compact-row {
@@ -2129,14 +2207,14 @@ body.screenshot-mode .badge-container {
     }
 
     .preview-actions {
-        display: flex !important;
-        flex-direction: row !important;
+        display: flex;
+        flex-direction: row;
         flex-wrap: nowrap;
         gap: 0.5rem;
         margin-top: 0;
         padding-top: 0;
-        opacity: 1 !important;
-        max-height: none !important;
+        opacity: 1;
+        max-height: none;
         width: 100%;
         flex-shrink: 0;
     }
@@ -2147,24 +2225,24 @@ body.screenshot-mode .badge-container {
 
     .preview-actions .btn-export,
     .preview-actions .share-wrapper {
-        width: calc(50% - 0.2rem) !important;
-        flex: 1 !important;
+        width: calc(50% - 0.2rem);
+        flex: 1;
         font-size: 0.75rem;
-        height: 34px !important;
-        padding: 0 !important;
-        display: flex !important;
+        height: 34px;
+        padding: 0;
+        display: flex;
         align-items: center;
         justify-content: center;
     }
 
     .preview-actions button {
-        padding: 0 !important;
-        height: 34px !important;
-        font-size: 0.75rem !important;
+        padding: 0;
+        height: 34px;
+        font-size: 0.75rem;
     }
 
     .preview-actions .share-wrapper button {
-        width: 100% !important;
+        width: 100%;
     }
 
     .theme-toggle {
@@ -2177,105 +2255,108 @@ body.screenshot-mode .badge-container {
 @media (min-width: 900px) and (max-width: 1150px) {
     body {
         height: 100vh;
+        height: 100dvh;
         overflow: hidden;
-        padding: 0 !important;
-        margin: 0 !important;
+        padding: 0;
+        margin: 0;
     }
 
     .container {
-        grid-template-columns: 1fr 380px !important;
-        grid-template-rows: auto !important;
-        height: 100vh !important;
-        overflow-y: auto !important;
-        overflow-x: hidden !important;
-        border-radius: 0 !important;
-        max-width: none !important;
-        gap: 0 !important;
-        align-items: start !important;
-        background: var(--bg-color) !important;
-        border: none !important;
-        box-shadow: none !important;
-        padding: 0 !important;
-        margin: 0 !important;
+        grid-template-columns: 1fr 380px;
+        grid-template-rows: auto;
+        height: 100vh;
+        height: 100dvh;
+        overflow-y: auto;
+        overflow-x: hidden;
+        border-radius: 0;
+        max-width: none;
+        gap: 0;
+        align-items: start;
+        background: var(--bg-color);
+        border: none;
+        box-shadow: none;
+        padding: 0;
+        margin: 0;
     }
 
     .preview-section {
-        grid-column: 1 !important;
-        grid-row: 1 / 20 !important;
-        position: sticky !important;
-        top: 0 !important;
-        height: 100vh !important;
-        padding: 2.5rem !important;
-        display: flex !important;
-        flex-direction: column !important;
-        justify-content: space-between !important;
-        align-items: center !important; /* Prevents children from stretching horizontally */
-        background: var(--panel-bg) !important;
-        backdrop-filter: blur(20px) !important;
-        -webkit-backdrop-filter: blur(20px) !important;
-        margin: 0 !important;
-        border-bottom: none !important;
-        border-right: 1px solid var(--glass-border) !important;
-        border-radius: 0 !important;
-        z-index: 100 !important;
-        overflow: hidden !important;
-        zoom: 1 !important;
+        grid-column: 1;
+        grid-row: 1 / 20;
+        position: sticky;
+        top: 0;
+        height: 100vh;
+        height: 100dvh;
+        padding: 2.5rem;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        align-items: center; /* Prevents children from stretching horizontally */
+        background: var(--panel-bg);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        margin: 0;
+        border-bottom: none;
+        border-right: 1px solid var(--glass-border);
+        border-radius: 0;
+        z-index: 100;
+        overflow: hidden;
+        zoom: 1;
     }
 
     .preview-header {
-        margin-top: 0 !important;
-        flex-shrink: 0 !important;
-        width: 100% !important;
+        margin-top: 0;
+        flex-shrink: 0;
+        width: 100%;
     }
 
     h1 {
-        font-size: 2.5rem !important;
-        display: block !important;
+        font-size: 2.5rem;
+        display: block;
     }
 
     .icon-canvas-wrapper {
-        width: 100% !important;
-        max-width: 60vh !important; /* Limits width by height to maintain square */
-        max-height: 60vh !important; /* Limits height directly */
-        aspect-ratio: 1/1 !important;
-        height: auto !important;
-        margin: auto !important;
-        flex: none !important;
-        display: flex !important;
+        width: 100%;
+        max-width: 60vh; /* Limits width by height to maintain square */
+        max-height: 60vh; /* Limits height directly */
+        aspect-ratio: 1/1;
+        height: auto;
+        margin: auto;
+        flex: none;
+        display: flex;
     }
 
     .controls-section {
-        grid-column: 2 !important;
-        height: auto !important;
-        overflow: visible !important;
-        padding: 2.5rem 2rem !important;
-        background: var(--sidebar-bg) !important;
-        box-shadow: inset 10px 0 30px -10px rgba(0, 0, 0, 0.3) !important;
-        border-left: none !important;
-        zoom: 0.95 !important;
+        grid-column: 2;
+        height: auto;
+        overflow: visible;
+        padding: 2.5rem 2rem;
+        background: var(--sidebar-bg);
+        box-shadow: inset 10px 0 30px -10px rgba(0, 0, 0, 0.3);
+        border-left: none;
+        zoom: 0.95;
     }
 
     .mobile-divider {
-        grid-column: 2 !important;
-        display: block !important;
-        margin: 0 2rem !important;
-        width: calc(100% - 4rem) !important;
+        grid-column: 2;
+        display: block;
+        margin: 0 2rem;
+        width: calc(100% - 4rem);
     }
 
     .mobile-divider:first-of-type {
-        display: none !important;
+        display: none;
     }
 
     .preview-actions {
-        display: flex !important;
-        flex-direction: row !important;
-        gap: 1rem !important;
-        margin-top: auto !important;
-        padding-top: 1rem !important;
-        opacity: 1 !important;
-        max-height: none !important;
-        width: 100% !important;
-        flex-shrink: 0 !important;
+        display: flex;
+        flex-direction: row;
+        gap: 1rem;
+        margin-top: auto;
+        padding-top: 1rem;
+        opacity: 1;
+        max-height: none;
+        width: 100%;
+        flex-shrink: 0;
     }
 
     .preview-actions .btn-screenshot-mode {
@@ -2284,8 +2365,625 @@ body.screenshot-mode .badge-container {
 
     .preview-actions .btn-export,
     .preview-actions .share-wrapper {
-        flex: 1 !important;
-        display: flex !important;
-        width: auto !important;
+        flex: 1;
+        display: flex;
+        width: auto;
     }
 }
+
+/* Hide Screenshot Mode on all touch-primary or touch-emulated devices (like iPad, mobile) */
+.touch-device .preview-actions .btn-screenshot-mode {
+    display: none !important;
+}
+
+@media (pointer: coarse) {
+    .preview-actions .btn-screenshot-mode {
+        display: none !important;
+    }
+}
+
+/* Hide Screenshot Mode on viewports under 1200px (covers iPad 11-inch landscape in simulators and small viewports) */
+@media (max-width: 1200px) {
+    .preview-actions .btn-screenshot-mode {
+        display: none !important;
+    }
+}
+
+
+/* --- iOS & PWA Mobile Native Optimization Upgrades --- */
+
+/* 1. Touch & Selection Optimizations */
+button,
+.shape-btn,
+.color-swatch,
+.custom-color-wrapper,
+.suggestion-tag,
+.dropdown-item,
+.drawer-trigger,
+.theme-toggle,
+.ios-prompt-close {
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation; /* Prevents double-tap delay in mobile browsers */
+}
+
+/* 2. Safe Area Insets for Edge-to-Edge Displays (iPhone / iPad) */
+:root {
+    --safe-top: env(safe-area-inset-top, 0px);
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
+    --safe-left: env(safe-area-inset-left, 0px);
+    --safe-right: env(safe-area-inset-right, 0px);
+}
+
+@media (max-width: 1150px) {
+    /* Safe Area padding inside the sticky mobile header */
+    .preview-section {
+        padding-top: calc(1.5rem + var(--safe-top)) !important;
+        margin-top: calc(-1.5rem - var(--safe-top)) !important;
+    }
+    
+    /* Extra padding inside base-drawer to clear iOS home indicator */
+    .mobile-drawer .drawer-content {
+        padding-bottom: calc(2.5rem + var(--safe-bottom)) !important;
+    }
+}
+
+/* 3. Custom iOS PWA Installer Prompt Styles & Desktop PWA Installer Prompt Styles */
+.ios-prompt-container,
+.desktop-prompt-container {
+    display: none !important; /* Hidden by default - activated only on supported devices */
+}
+
+/* Activated State (shows inline below the main container card on mobile/tablet) */
+@media (max-width: 1150px) {
+    .ios-prompt-container.visible,
+    .desktop-prompt-container.visible {
+        display: flex !important;
+        justify-content: center;
+        width: 100%;
+        max-width: 600px; /* Matches the max-width of the mobile container exactly */
+        margin: 1.5rem auto 2.5rem auto; /* Sits cleanly below the main container card */
+        padding: 0;
+        box-sizing: border-box;
+    }
+}
+
+/* Styling when placed inside the controls sidebar on iPad & Desktop */
+.controls-section .ios-prompt-container.visible,
+.controls-section .desktop-prompt-container.visible {
+    display: block !important; /* Standard block display to naturally inherit parent width */
+    width: calc(100% - 1rem) !important; /* Perfect fit leaving clean equal margins on both sides */
+    max-width: 100%;
+    margin: auto;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+.controls-section .ios-prompt-card,
+.controls-section .desktop-prompt-card {
+    width: 100%;
+    max-width: 100%;
+    border-radius: 16px; /* Sleek tighter border radius */
+    padding: 0.75rem 0.9rem; /* More compact padding for narrow columns */
+}
+
+/* Sidebar compact collapsed layout overrides to fit narrow columns */
+.controls-section .ios-prompt-header-compact,
+.controls-section .desktop-prompt-header-compact {
+    gap: 0.5rem;
+}
+
+.controls-section .ios-prompt-header-compact .ios-prompt-app-icon,
+.controls-section .desktop-prompt-header-compact .desktop-prompt-app-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 7px;
+}
+
+.controls-section .ios-prompt-header-compact .ios-prompt-app-info h3,
+.controls-section .desktop-prompt-header-compact .desktop-prompt-app-info h3 {
+    font-size: 0.82rem;
+}
+
+/* Hide the domain name inside the narrow sidebar to save horizontal space */
+.controls-section .ios-prompt-header-compact .ios-prompt-app-info p,
+.controls-section .desktop-prompt-header-compact .desktop-prompt-app-info p {
+    display: none !important;
+}
+
+.controls-section .ios-prompt-container.collapsed .ios-prompt-collapsed-content {
+    gap: 0.5rem;
+    padding-right: 0 !important; /* No close button space needed in collapsed mode */
+}
+
+.controls-section .desktop-prompt-container.collapsed .desktop-prompt-collapsed-content {
+    gap: 0.5rem;
+    padding-right: 1.85rem !important; /* Make room for the desktop close button */
+}
+
+.controls-section .ios-prompt-install-btn,
+.controls-section .desktop-prompt-install-btn {
+    padding: 0.45rem 0.75rem !important;
+    font-size: 0.75rem !important;
+    border-radius: 16px !important;
+}
+
+.controls-section .ios-prompt-install-btn svg.btn-icon-svg,
+.controls-section .desktop-prompt-install-btn svg.btn-icon-svg {
+    width: 11px !important;
+    height: 11px !important;
+}
+
+/* Sidebar compact expanded steps overrides */
+.controls-section .ios-prompt-expanded-content .ios-prompt-header,
+.controls-section .desktop-prompt-expanded-content .desktop-prompt-header {
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+}
+
+.controls-section .ios-prompt-expanded-content .ios-prompt-app-icon,
+.controls-section .desktop-prompt-expanded-content .desktop-prompt-app-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+}
+
+.controls-section .ios-prompt-expanded-content .ios-prompt-app-info h3,
+.controls-section .desktop-prompt-expanded-content .desktop-prompt-app-info h3 {
+    font-size: 0.9rem;
+}
+
+.controls-section .ios-prompt-expanded-content .ios-prompt-app-info p,
+.controls-section .desktop-prompt-expanded-content .desktop-prompt-app-info p {
+    font-size: 0.7rem;
+}
+
+.controls-section .ios-prompt-body p,
+.controls-section .desktop-prompt-body p {
+    font-size: 0.75rem !important;
+    margin-bottom: 0.75rem;
+    line-height: 1.3;
+}
+
+.controls-section .ios-prompt-step,
+.controls-section .desktop-prompt-step {
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.controls-section .ios-prompt-step-num,
+.controls-section .desktop-prompt-step-num {
+    width: 18px;
+    height: 18px;
+    font-size: 0.7rem;
+}
+
+.controls-section .ios-prompt-step-text,
+.controls-section .desktop-prompt-step-text {
+    font-size: 0.75rem !important;
+    line-height: 1.3;
+}
+
+.ios-prompt-card,
+.desktop-prompt-card {
+    width: 100%;
+    background: var(--ios-prompt-bg);
+    backdrop-filter: blur(24px) saturate(190%);
+    -webkit-backdrop-filter: blur(24px) saturate(190%);
+    border: 1px solid var(--ios-prompt-border);
+    border-radius: 24px;
+    padding: 1.25rem;
+    position: relative;
+    box-shadow: var(--ios-prompt-shadow);
+    box-sizing: border-box;
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Collapsed vs Expanded display toggle */
+.ios-prompt-container.collapsed .ios-prompt-collapsed-content,
+.desktop-prompt-container.collapsed .desktop-prompt-collapsed-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding-right: 2rem; /* Avoid close button overlap */
+}
+
+.ios-prompt-container.collapsed .ios-prompt-expanded-content,
+.desktop-prompt-container.collapsed .desktop-prompt-expanded-content {
+    display: none;
+}
+
+.ios-prompt-container:not(.collapsed) .ios-prompt-collapsed-content,
+.desktop-prompt-container:not(.collapsed) .desktop-prompt-collapsed-content {
+    display: none;
+}
+
+.ios-prompt-container:not(.collapsed) .ios-prompt-expanded-content,
+.desktop-prompt-container:not(.collapsed) .desktop-prompt-expanded-content {
+    display: block;
+    animation: iosPromptFadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes iosPromptFadeIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Only show close button when expanded, not when collapsed for iOS; 
+   But on desktop, keep it clickable if collapsed to allow dismissing! */
+.ios-prompt-container.collapsed .ios-prompt-close {
+    display: none !important;
+}
+
+.desktop-prompt-container.collapsed .desktop-prompt-close {
+    display: flex !important;
+    width: 24px;
+    height: 24px;
+    top: 0.5rem;
+    right: 0.5rem;
+}
+
+/* Compact header inside collapsed state */
+.ios-prompt-header-compact,
+.desktop-prompt-header-compact {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex: 1;
+}
+
+.ios-prompt-header-compact .ios-prompt-app-icon,
+.desktop-prompt-header-compact .desktop-prompt-app-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 9px;
+}
+
+.ios-prompt-header-compact .ios-prompt-app-info h3,
+.desktop-prompt-header-compact .desktop-prompt-app-info h3 {
+    font-size: 0.95rem;
+}
+
+.ios-prompt-header-compact .ios-prompt-app-info p,
+.desktop-prompt-header-compact .desktop-prompt-app-info p {
+    font-size: 0.75rem;
+}
+
+/* Install Button styling (Apple style iOS blue) */
+.ios-prompt-install-btn,
+.desktop-prompt-install-btn {
+    background: #007aff;
+    color: white;
+    border: none;
+    padding: 0.55rem 1rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    transition: background-color 0.2s, transform 0.2s, box-shadow 0.2s;
+    box-shadow: 0 4px 10px rgba(0, 122, 255, 0.3);
+    flex-shrink: 0;
+}
+
+.ios-prompt-install-btn:hover,
+.desktop-prompt-install-btn:hover {
+    background: #0063cc;
+    box-shadow: 0 4px 14px rgba(0, 122, 255, 0.45);
+}
+
+.ios-prompt-install-btn:active,
+.desktop-prompt-install-btn:active {
+    transform: scale(0.96);
+}
+
+.ios-prompt-install-btn svg.btn-icon-svg,
+.desktop-prompt-install-btn svg.btn-icon-svg {
+    width: 13px;
+    height: 13px;
+    stroke-width: 2.5px;
+}
+
+/* Close button - Fully visible in dark theme */
+.ios-prompt-close,
+.desktop-prompt-close {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: var(--ios-prompt-close-bg) !important;
+    border: 1px solid var(--ios-prompt-close-border) !important;
+    color: var(--ios-prompt-close-color) !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    padding: 0;
+    transition: background-color 0.2s, color 0.2s, transform 0.2s;
+    z-index: 10;
+}
+
+.ios-prompt-close:hover,
+.desktop-prompt-close:hover {
+    background: var(--ios-prompt-close-hover-bg) !important;
+    transform: scale(1.05);
+}
+
+.ios-prompt-close:active,
+.desktop-prompt-close:active {
+    transform: scale(0.95);
+}
+
+.ios-prompt-close svg,
+.desktop-prompt-close svg {
+    width: 14px;
+    height: 14px;
+    stroke-width: 2.5px;
+    stroke: currentColor;
+}
+
+.ios-prompt-header,
+.desktop-prompt-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.25rem;
+    padding-right: 2rem;
+}
+
+.ios-prompt-app-icon,
+.desktop-prompt-app-icon {
+    width: 54px;
+    height: 54px;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: var(--bg-main);
+    flex-shrink: 0;
+}
+
+.ios-prompt-app-icon img,
+.desktop-prompt-app-icon img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.ios-prompt-app-info h3,
+.desktop-prompt-app-info h3 {
+    margin: 0;
+    font-family: 'Outfit', sans-serif;
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--text-main);
+}
+
+.ios-prompt-app-info p,
+.desktop-prompt-app-info p {
+    margin: 0.1rem 0 0 0;
+    font-size: 0.78rem;
+    color: var(--text-muted);
+}
+
+.ios-prompt-body p,
+.desktop-prompt-body p {
+    margin: 0 0 1.25rem 0;
+    font-size: 0.88rem;
+    line-height: 1.45;
+    color: var(--text-main);
+    opacity: 0.9;
+}
+
+.ios-prompt-steps,
+.desktop-prompt-steps {
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+    border-top: 1px solid var(--ios-prompt-steps-border);
+    padding-top: 1rem;
+}
+
+.ios-prompt-step,
+.desktop-prompt-step {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.85rem;
+}
+
+.ios-prompt-step-num,
+.desktop-prompt-step-num {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: var(--accent);
+    color: white;
+    font-size: 0.75rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 0.1rem;
+}
+
+.ios-prompt-step-text,
+.desktop-prompt-step-text {
+    font-size: 0.85rem;
+    line-height: 1.4;
+    color: var(--text-main);
+}
+
+.ios-icon-span {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--ios-prompt-icon-span-bg);
+    border: 1px solid var(--ios-prompt-icon-span-border);
+    border-radius: 6px;
+    padding: 0.15rem 0.35rem;
+    vertical-align: middle;
+    margin: 0 0.15rem;
+}
+
+.ios-icon-span-plus {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    vertical-align: middle;
+    margin-right: 0.25rem;
+    color: #007aff;
+}
+
+.ios-action-icon {
+    width: 14px;
+    height: 14px;
+    display: inline-block;
+    vertical-align: middle;
+}
+
+.ios-action-text {
+    font-weight: 600;
+    color: #007aff;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+/* SEO Features Card (Sleek Collapsible Panel) */
+.seo-features-card {
+    padding-top: 1rem;
+    border-top: 1px solid var(--glass-border);
+    flex-shrink: 0;
+}
+
+.seo-details {
+    background: var(--control-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.seo-details[open] {
+    background: var(--seo-bg-open);
+    box-shadow: 0 4px 20px var(--shadow-color);
+}
+
+.seo-summary {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    padding: 0.75rem 1rem;
+    cursor: pointer;
+    user-select: none;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-main);
+    list-style: none; /* Hide default arrow */
+}
+
+.seo-summary::-webkit-details-marker {
+    display: none; /* Hide default arrow in Safari */
+}
+
+.seo-info-icon {
+    width: 14px;
+    height: 14px;
+    color: var(--accent);
+    flex-shrink: 0;
+}
+
+.seo-arrow-icon {
+    width: 14px;
+    height: 14px;
+    margin-left: auto;
+    color: var(--text-muted);
+    transition: transform 0.3s ease;
+}
+
+.seo-details[open] .seo-arrow-icon {
+    transform: rotate(180deg);
+}
+
+.seo-details-content {
+    padding: 0 1rem 1rem 1rem;
+    font-size: 0.72rem;
+    line-height: 1.45;
+    color: var(--text-muted);
+    border-top: 1px solid var(--glass-border);
+    margin-top: 0.25rem;
+    padding-top: 0.75rem;
+}
+
+.seo-details-content h2 {
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--text-main);
+    margin-bottom: 0.5rem;
+    line-height: 1.2;
+}
+
+.seo-details-content h3 {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--text-main);
+    margin: 0.75rem 0 0.4rem 0;
+}
+
+.seo-details-content p {
+    margin-bottom: 0.5rem;
+}
+
+.seo-details-content ul {
+    padding-left: 1rem;
+    margin: 0;
+}
+
+.seo-details-content li {
+    margin-bottom: 0.4rem;
+}
+
+.seo-details-content li strong {
+    color: var(--text-main);
+}
+
+/* Keyboard Navigation Focus States (WCAG 2.4.7 Focus Visible Success Criterion) */
+:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.4);
+}
+
+/* Explicit custom states to match high-fidelity theme styling */
+button:focus-visible,
+input[type="text"]:focus-visible,
+input[type="range"]:focus-visible,
+.shape-btn:focus-visible,
+.toolbar-btn:focus-visible,
+.custom-color-wrapper input[type="color"]:focus-visible,
+#theme-toggle:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+}
+
+/* Specific reset for range thumbs focus states */
+input[type="range"]:focus-visible::-webkit-slider-thumb {
+    outline: 2px solid var(--text-main);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px var(--accent);
+}
+
+input[type="range"]:focus-visible::-moz-range-thumb {
+    outline: 2px solid var(--text-main);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px var(--accent);
+}
+

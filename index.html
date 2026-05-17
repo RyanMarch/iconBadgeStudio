@@ -14,21 +14,50 @@
         })();
     </script>
     <meta name="google" content="notranslate">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    
+    <!-- Primary SEO Metadata -->
     <title>Icon Studio | Edit, Generate, & Customize Icons</title>
     <meta name="description" content="Create premium icons with customizable badges, rich gradients, and skeuomorphic effects. Export high-quality PNGs and share designs via URL.">
-    
+    <meta name="keywords" content="icon generator, app icon designer, custom app badges, gradient icons, skeuomorphic app icons, designer toolkit, PNG export, share icons, custom icons, glassmorphic icons, PWA designer">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://iconstudio.ryanmarch.me/">
+
     <!-- Open Graph -->
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="Icon Studio">
     <meta property="og:url" content="https://iconstudio.ryanmarch.me/">
-    <meta property="og:title" content="Icon Studio | Design & Share Custom Icons">
-    <meta property="og:description" content="Design premium icons with rich effects. Create and share your custom designs instantly via URL.">
+    <meta property="og:title" content="Icon Studio | Edit, Generate, & Customize Icons">
+    <meta property="og:description" content="Create premium icons with customizable badges, rich gradients, and skeuomorphic effects. Export high-quality PNGs and share designs via URL.">
     <meta property="og:image" content="https://iconstudio.ryanmarch.me/assets/favicon/web-app-manifest-512x512.png">
+
+    <!-- Google Structured Data (JSON-LD WebApplication) -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "Icon Studio",
+      "url": "https://iconstudio.ryanmarch.me/",
+      "description": "Design premium, skeuomorphic, and modern app icons with custom badges, gradients, and frames. Export high-resolution PNGs and share configurations instantly.",
+      "applicationCategory": "DesignApplication",
+      "operatingSystem": "All",
+      "browserRequirements": "Requires JavaScript. Requires HTML5 Canvas.",
+      "creator": {
+        "@type": "Person",
+        "name": "Ryan March"
+      },
+      "offers": {
+        "@type": "Offer",
+        "price": "0.00",
+        "priceCurrency": "USD"
+      }
+    }
+    </script>
     
     <!-- Fonts & Icons -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://unpkg.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@600;700&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
 
@@ -39,10 +68,13 @@
     <link rel="shortcut icon" href="/assets/favicon/favicon.ico" />
     <link rel="apple-touch-icon" sizes="180x180" href="/assets/favicon/apple-touch-icon.png" />
     <meta name="apple-mobile-web-app-title" content="Icon Studio" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="theme-color" content="#020617" />
     <link rel="manifest" href="/assets/favicon/site.webmanifest" />
 
     <!-- External Assets -->
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css?v=4.0.3">
 </head>
 <body id="main-body">
 
@@ -63,9 +95,9 @@
         </div>
     </div>
 
-    <div class="container" id="tool-container">
+    <main class="container" id="tool-container">
         <!-- Preview -->
-        <div class="preview-section">
+        <section class="preview-section" aria-label="Icon Design Preview">
             <div class="preview-header">
                 <h1>Icon Studio</h1>
                 <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme">
@@ -79,7 +111,7 @@
             <div class="icon-canvas-wrapper" id="capture-area">
                 <div class="icon-canvas pos-bottom-right" id="icon-canvas">
                     <div class="base-bg squircle" id="base-bg">
-                        <img src="assets/img/base-placeholder.svg" alt="Placeholder Icon" class="base-icon" id="base-img">
+                        <img src="assets/img/base-placeholder.svg" alt="Placeholder Icon" class="base-icon" id="base-img" width="512" height="512" loading="eager">
                         <div class="base-text" id="base-text">YOUR TEXT</div>
                         <div class="base-effects" id="base-effects"></div>
                         <div class="base-overlay" id="base-overlay"></div>
@@ -122,12 +154,12 @@
                 <button class="btn-export" onclick="exportPNG()">
                     <i data-lucide="download"></i> Export PNG
                 </button>
-            </div>
+            </section>
         </div>
         <hr class="mobile-divider">
 
         <!-- Base Controls (Middle Column) -->
-        <div class="controls-section">
+        <section class="controls-section base-controls" aria-label="Base Layer Customization">
             <div class="control-group">
                 <label>Base Image</label>
                 <div style="display: flex; gap: 0.5rem; width: 100%; align-items: stretch;">
@@ -152,7 +184,7 @@
                     <div class="drawer-scroll-area">
                         <div class="control-group">
                             <div class="range-header">
-                                <label>Base Image Size</label>
+                                <label for="base-size-input">Base Image Size</label>
                                 <span class="range-val"><span id="base-size-val">80</span>%</span>
                             </div>
                             <input type="range" id="base-size-input" min="50" max="100" value="80" oninput="setBaseSize(this.value)">
@@ -161,13 +193,13 @@
                         <div id="base-gradient-controls">
                             <div class="compact-row">
                                 <div class="control-group" id="base-colors-group">
-                                    <label>Base Colors</label>
+                                    <span class="range-header" style="font-weight: 500; font-size: 0.8rem; margin-bottom: 0.35rem; color: var(--text-main);">Base Colors</span>
                                     <div class="color-presets">
                                         <div class="custom-color-wrapper" title="Base Color 1" style="--swatch-color: #3b82f6">
-                                            <input type="color" id="base-bg-color-1" value="#3b82f6" oninput="setBaseColor1(this.value)">
+                                            <input type="color" id="base-bg-color-1" value="#3b82f6" oninput="setBaseColor1(this.value)" aria-label="Base Gradient Color 1">
                                         </div>
                                         <div class="custom-color-wrapper" title="Base Color 2" style="--swatch-color: #1D0945">
-                                            <input type="color" id="base-bg-color-2" value="#1D0945" oninput="setBaseColor2(this.value)">
+                                            <input type="color" id="base-bg-color-2" value="#1D0945" oninput="setBaseColor2(this.value)" aria-label="Base Gradient Color 2">
                                         </div>
                                     </div>
                                 </div>
@@ -185,7 +217,7 @@
 
                             <div class="control-group" id="base-angle-group">
                                 <div class="range-header">
-                                    <label>Gradient Angle</label>
+                                    <label for="base-angle-input">Gradient Angle</label>
                                     <span class="range-val"><span id="base-angle-val">90</span>°</span>
                                 </div>
                                 <input type="range" id="base-angle-input" min="0" max="360" value="90" oninput="setBaseGradientAngle(this.value)">
@@ -195,7 +227,7 @@
                         <div id="base-image-controls" class="hidden">
                             <div class="control-group">
                                 <div class="range-header">
-                                    <label>Image Zoom</label>
+                                    <label for="base-zoom-input">Image Zoom</label>
                                     <span class="range-val"><span id="base-zoom-val">100</span>%</span>
                                 </div>
                                 <input type="range" id="base-zoom-input" min="100" max="300" value="100" oninput="setBaseImageZoom(this.value)">
@@ -204,8 +236,8 @@
 
                         <div class="control-group">
                             <div class="label-row" style="margin-bottom: 0;">
-                                <label style="margin-bottom: 0;">Base Text</label>
-                                <label style="margin-bottom: 0;">Color</label>
+                                <label for="base-text-input" style="margin-bottom: 0;">Base Text</label>
+                                <label for="base-text-color" style="margin-bottom: 0;">Color</label>
                             </div>
                             <div class="text-color-row" style="align-items: center;">
                                 <div class="text-input-wrapper" style="position: relative; flex: 1;">
@@ -255,11 +287,35 @@
                 </div>
             </div>
 
-        </div>
+                        <div class="seo-features-card">
+                <details class="seo-details">
+                    <summary class="seo-summary">
+                        <i data-lucide="info" class="seo-info-icon"></i>
+                        <span>About Icon Studio & Features</span>
+                        <i data-lucide="chevron-down" class="seo-arrow-icon"></i>
+                    </summary>
+                    <div class="seo-details-content">
+                        <h2>Premium Icon Generator</h2>
+                        <p>
+                            <strong>Icon Studio</strong> is a professional browser-based design toolkit built to craft beautiful app icons, customize badges, and generate high-fidelity assets.
+                        </p>
+                        <h3>Key Design Features:</h3>
+                        <ul>
+                            <li><strong>Skeuomorphic Frames:</strong> Apply premium gloss/shine, glassmorphism, metallic, borders, or embossed frames.</li>
+                            <li><strong>Rich Gradients:</strong> Choose from linear, radial, conic, or multi-color mesh gradient types.</li>
+                            <li><strong>Dynamic Badges:</strong> Position, resize, rotate, and color custom badges (Circle, Squircle, Shield, Diamond, Hexagon) integrated with the full <em>Lucide Icons</em> library.</li>
+                            <li><strong>Instant Dynamic Sharing:</strong> Share design configurations via encoded URLs featuring full iMessage, X (Twitter), and social image preview cards.</li>
+                            <li><strong>PWA Ready:</strong> Install directly onto your iOS/macOS Dock or Home Screen to design offline and in full screen.</li>
+                        </ul>
+                    </div>
+                </details>
+            </div>
+
+        </section>
         <hr class="mobile-divider">
 
         <!-- Badge Controls (Right Column) -->
-        <div class="controls-section">
+        <section class="controls-section badge-controls" aria-label="Badge Layer Customization">
             
             <div class="control-group">
                 <label>Badge Position</label>
@@ -288,21 +344,21 @@
                 </div>
 
                 <div class="control-group">
-                    <label>Badge Color</label>
+                    <span class="range-header" style="font-weight: 500; font-size: 0.8rem; margin-bottom: 0.35rem; color: var(--text-main);">Badge Color</span>
                     <div class="color-presets" id="color-presets">
                         <!-- Dynamic swatches -->
                         <div class="custom-color-wrapper" id="custom-color-ui" title="Custom Color" style="--swatch-color: #3b82f6">
                             <i data-lucide="plus" style="color:white"></i>
-                            <input type="color" id="custom-color" value="#3b82f6" oninput="setColor(this.value)">
+                            <input type="color" id="custom-color" value="#3b82f6" oninput="setColor(this.value)" aria-label="Custom Badge Color">
                         </div>
                     </div>
                 </div>
 
                 <div class="control-group">
-                    <label>Icon Picker (<a href="https://lucide.dev/icons" target="_blank" style="color: inherit; text-decoration: underline; text-underline-offset: 2px;">Lucide</a>)</label>
+                    <label for="icon-input">Icon Picker (<a href="https://lucide.dev/icons" target="_blank" style="color: inherit; text-decoration: underline; text-underline-offset: 2px;">Lucide</a>)</label>
                     <div class="icon-picker-wrapper">
-                        <input type="text" id="icon-input" name="icon-search" placeholder="e.g. users, gauge, dumbbell, bell..." oninput="handleIconInput(this.value)" onfocus="showSuggestions()" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false">
-                        <div id="icon-dropdown" class="icon-dropdown"></div>
+                        <input type="text" id="icon-input" name="icon-search" placeholder="e.g. users, gauge, dumbbell, bell..." oninput="handleIconInput(this.value)" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="icon-dropdown">
+                        <div id="icon-dropdown" class="icon-dropdown" role="listbox" aria-label="Icon Suggestions"></div>
                     </div>
                     <div class="icon-suggestions">
                         Ex: 
@@ -317,7 +373,7 @@
 
                 <div class="control-group">
                     <div class="range-header">
-                        <label>Badge Size</label>
+                        <label for="badge-size-input">Badge Size</label>
                         <span class="range-val"><span id="badge-size-val">40</span>%</span>
                     </div>
                     <input type="range" id="badge-size-input" min="20" max="60" value="40" oninput="setBadgeSize(this.value)">
@@ -325,7 +381,7 @@
 
                 <div class="control-group">
                     <div class="range-header">
-                        <label>Badge Rotation</label>
+                        <label for="badge-rot-input">Badge Rotation</label>
                         <span class="range-val"><span id="badge-rot-val">0</span>°</span>
                     </div>
                     <input type="range" id="badge-rot-input" min="0" max="360" value="0" oninput="setBadgeRotation(this.value)">
@@ -333,7 +389,7 @@
 
                 <div class="control-group">
                     <div class="range-header">
-                        <label>Badge Icon Scale</label>
+                        <label for="inner-scale-input">Badge Icon Scale</label>
                         <span class="range-val"><span id="inner-scale-val">70</span>%</span>
                     </div>
                     <input type="range" id="inner-scale-input" min="20" max="100" value="70" oninput="setInnerScale(this.value)">
@@ -349,17 +405,156 @@
                     <i data-lucide="refresh-cw"></i> Reset All
                 </button>
             </div>
-        </div>
 
+        </section>
+
+    </main>
+
+    <!-- iOS Add to Home Screen Prompt Container (Sits below the end of the main app UI panel) -->
+    <div id="ios-pwa-prompt" class="ios-prompt-container collapsed">
+        <div class="ios-prompt-card">
+            <!-- Close Button (visible when expanded) -->
+            <button class="ios-prompt-close" aria-label="Close" onclick="collapseIosPrompt(event)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            </button>
+
+            <!-- Collapsed State: Icon, Title, Install Button -->
+            <div class="ios-prompt-collapsed-content">
+                <div class="ios-prompt-header-compact">
+                    <div class="ios-prompt-app-icon">
+                        <img src="/assets/favicon/apple-touch-icon.png" alt="Icon Studio Icon" width="180" height="180" loading="lazy">
+                    </div>
+                    <div class="ios-prompt-app-info">
+                        <h3>Icon Studio</h3>
+                        <p>iconstudio.ryanmarch.me</p>
+                    </div>
+                </div>
+                <button class="ios-prompt-install-btn" onclick="expandIosPrompt(event)">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="btn-icon-svg"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                    Install
+                </button>
+            </div>
+
+            <!-- Expanded State: Step-by-Step Instructions -->
+            <div class="ios-prompt-expanded-content">
+                <div class="ios-prompt-header">
+                    <div class="ios-prompt-app-icon">
+                        <img src="/assets/favicon/apple-touch-icon.png" alt="Icon Studio Icon" width="180" height="180" loading="lazy">
+                    </div>
+                    <div class="ios-prompt-app-info">
+                        <h3>Icon Studio</h3>
+                        <p>iconstudio.ryanmarch.me</p>
+                    </div>
+                </div>
+                <div class="ios-prompt-body">
+                    <p>Install this web app on your device to design in full screen, use high-fidelity exports, and work offline.</p>
+                    <div class="ios-prompt-steps">
+                        <div class="ios-prompt-step">
+                            <div class="ios-prompt-step-num">1</div>
+                            <div class="ios-prompt-step-text">
+                                Tap the share button <span class="ios-icon-span"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="ios-action-icon"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"></path><polyline points="16 6 12 2 8 6"></polyline><line x1="12" y1="2" x2="12" y2="15"></line></svg></span> in Safari's toolbar.
+                            </div>
+                        </div>
+                        <div class="ios-prompt-step">
+                            <div class="ios-prompt-step-num">2</div>
+                            <div class="ios-prompt-step-text">
+                                Scroll down and select <span class="ios-action-text"><span class="ios-icon-span-plus"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="ios-action-icon"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="16"></line><line x1="8" y1="12" x2="16" y2="12"></line></svg></span> Add to Home Screen</span>.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Desktop PWA Install Prompt Container (Sits below the iOS prompt, positioned dynamically) -->
+    <div id="desktop-pwa-prompt" class="desktop-prompt-container collapsed">
+        <div class="desktop-prompt-card">
+            <!-- Close Button (visible when expanded or collapses/dismisses when collapsed) -->
+            <button class="desktop-prompt-close" aria-label="Close" onclick="collapseDesktopPrompt(event)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            </button>
+
+            <!-- Collapsed State: Icon, Title, Install Button -->
+            <div class="desktop-prompt-collapsed-content">
+                <div class="desktop-prompt-header-compact">
+                    <div class="desktop-prompt-app-icon">
+                        <img src="/assets/favicon/apple-touch-icon.png" alt="Icon Studio Icon" width="180" height="180" loading="lazy">
+                    </div>
+                    <div class="desktop-prompt-app-info">
+                        <h3>Icon Studio</h3>
+                        <p id="desktop-prompt-subtitle">Install Desktop App</p>
+                    </div>
+                </div>
+                <button id="desktop-prompt-action-btn" class="desktop-prompt-install-btn" onclick="handleDesktopInstallAction(event)">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="btn-icon-svg"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                    Install
+                </button>
+            </div>
+
+            <!-- Expanded State: Step-by-Step Instructions -->
+            <div class="desktop-prompt-expanded-content">
+                <div class="desktop-prompt-header">
+                    <div class="desktop-prompt-app-icon">
+                        <img src="/assets/favicon/apple-touch-icon.png" alt="Icon Studio Icon" width="180" height="180" loading="lazy">
+                    </div>
+                    <div class="desktop-prompt-app-info">
+                        <h3>Icon Studio</h3>
+                        <p>iconstudio.ryanmarch.me</p>
+                    </div>
+                </div>
+                <div class="desktop-prompt-body">
+                    <p id="desktop-prompt-instructions-text">Install this web app on your device to design in full screen, use high-fidelity exports, and work offline.</p>
+                    <div class="desktop-prompt-steps" id="desktop-prompt-steps-container">
+                        <div class="desktop-prompt-step">
+                            <div class="desktop-prompt-step-num">1</div>
+                            <div class="desktop-prompt-step-text">
+                                Open the <strong>File</strong> menu in Safari's top menu bar.
+                            </div>
+                        </div>
+                        <div class="desktop-prompt-step">
+                            <div class="desktop-prompt-step-num">2</div>
+                            <div class="desktop-prompt-step-text">
+                                Select <span class="ios-action-text">Add to Dock...</span>.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Main Script -->
-    <script src="script.js"></script>
+    <script src="script.js?v=4.0.3" defer></script>
     <script>
         // Theme Toggle Logic
         let themeStatusTimeout;
         const themeToggle = document.getElementById('theme-toggle');
         const themeStatus = document.getElementById('theme-status');
+
+        const updateThemeColorMeta = (theme) => {
+            const meta = document.querySelector('meta[name="theme-color"]');
+            if (!meta) return;
+            let isLight = false;
+            if (theme === 'light') {
+                isLight = true;
+            } else if (theme === 'system') {
+                isLight = !window.matchMedia('(prefers-color-scheme: dark)').matches;
+            }
+            meta.setAttribute('content', isLight ? '#8aaacc' : '#020617');
+        };
+
+        // Initialize theme-color meta tag state
+        const initialTheme = localStorage.getItem('theme') || 'dark';
+        updateThemeColorMeta(initialTheme);
+
+        // Listen for OS theme changes to keep theme-color in sync
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+            const currentTheme = localStorage.getItem('theme') || 'dark';
+            if (currentTheme === 'system') {
+                updateThemeColorMeta('system');
+            }
+        });
 
         const showThemeStatus = (text) => {
             if (!themeStatus) return;
@@ -395,9 +590,11 @@
                 }
                 
                 localStorage.setItem('theme', newTheme);
+                updateThemeColorMeta(newTheme);
                 showThemeStatus(statusText);
             });
         }
     </script>
+
 </body>
 </html>
