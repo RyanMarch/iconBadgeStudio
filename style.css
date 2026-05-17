@@ -160,6 +160,10 @@ body {
 }
 
 @media (max-width: 899px) {
+    .seo-features-desktop {
+        display: none !important;
+    }
+
     body {
         height: auto;
         min-height: 100vh;
@@ -2504,19 +2508,23 @@ button,
         margin-left: 0 !important;
         margin-right: 0 !important;
         margin-top: 0 !important;
-        padding-top: calc(1.5rem + var(--safe-top)) !important;
+        padding-top: calc(var(--safe-top)) !important;
         top: -4.5rem !important;
         transition: none !important;
     }
 
     body.standalone-mode .preview-header {
         margin-top: 0 !important;
+        margin-bottom: 0 !important;
         opacity: var(--sticky-opacity, 1);
         transition: opacity 0.2s ease;
     }
 
-    body.standalone-mode .mobile-drawer .drawer-content,
     body.standalone-mode .controls-section {
+        padding: 0 1rem !important;
+    }
+
+    body.standalone-mode .seo-features-card {
         padding-bottom: calc(4rem + var(--safe-bottom)) !important;
     }
 }
@@ -2948,6 +2956,16 @@ button,
 }
 
 /* SEO Features Card (Sleek Collapsible Panel) */
+.seo-features-mobile {
+    display: none !important;
+}
+
+@media (max-width: 899px) {
+    .seo-features-mobile {
+        display: flex !important;
+    }
+}
+
 .seo-features-card {
     padding-top: 1rem;
     border-top: 1px solid var(--glass-border);
