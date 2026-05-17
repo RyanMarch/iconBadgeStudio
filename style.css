@@ -2418,6 +2418,11 @@ button,
 }
 
 @media (max-width: 1150px) {
+    /* Clear desktop negative margin on mobile to prevent layout collision */
+    .preview-header {
+        margin-top: 0 !important;
+    }
+
     /* Safe Area padding inside the sticky mobile header */
     .preview-section {
         padding-top: calc(1.5rem + var(--safe-top)) !important;
@@ -2428,6 +2433,82 @@ button,
     .mobile-drawer .drawer-content {
         padding-bottom: calc(2.5rem + var(--safe-bottom)) !important;
     }
+}
+
+/* 2.5 Standalone / PWA (Added to Home Screen) Mode Optimization */
+@media ((display-mode: standalone) or (display-mode: minimal-ui)) and (max-width: 1150px) {
+    body {
+        padding: 0 !important;
+        margin: 0 !important;
+        background-color: var(--bg-color) !important;
+        height: 100vh !important;
+        height: 100dvh !important;
+    }
+    
+    .container {
+        border-radius: 0 !important;
+        border: none !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        max-width: none !important;
+        height: 100% !important;
+    }
+    
+    .preview-section {
+        margin: 0 !important;
+        border-radius: 0 !important;
+        border-top-left-radius: 0 !important;
+        border-top-right-radius: 0 !important;
+        padding-top: calc(1.5rem + var(--safe-top)) !important;
+        top: calc(-5.5rem + var(--safe-top)) !important; /* Elegant stuck offset that accounts for safe-top */
+        transition: none !important; /* Prevent jerky movement in PWA */
+    }
+    
+    .preview-header {
+        margin-top: 0 !important;
+    }
+    
+    .mobile-drawer .drawer-content {
+        padding-bottom: calc(2rem + var(--safe-bottom)) !important;
+    }
+}
+
+/* Also support it via body.standalone-mode class added by JavaScript */
+body.standalone-mode {
+    padding: 0 !important;
+    margin: 0 !important;
+    background-color: var(--bg-color) !important;
+    height: 100vh !important;
+    height: 100dvh !important;
+}
+
+body.standalone-mode .container {
+    border-radius: 0 !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    max-width: none !important;
+    height: 100% !important;
+}
+
+body.standalone-mode .preview-section {
+    margin: 0 !important;
+    border-radius: 0 !important;
+    border-top-left-radius: 0 !important;
+    border-top-right-radius: 0 !important;
+    padding-top: calc(1.5rem + var(--safe-top)) !important;
+    top: calc(-5.5rem + var(--safe-top)) !important; /* Elegant stuck offset that accounts for safe-top */
+    transition: none !important; /* Prevent jerky movement in PWA */
+}
+
+body.standalone-mode .preview-header {
+    margin-top: 0 !important;
+}
+
+body.standalone-mode .mobile-drawer .drawer-content {
+    padding-bottom: calc(2rem + var(--safe-bottom)) !important;
 }
 
 /* 3. Custom iOS PWA Installer Prompt Styles & Desktop PWA Installer Prompt Styles */
