@@ -299,8 +299,8 @@ function setupStickyMobilePreview() {
         const actionsM = factor > 0.6 ? 0 : 0.5 * (1 - factor * 1.6);
         
         // Adjust margin to collapse the space taken by the scaled-down canvas
-        // Using 55% instead of 40% to aggressively shrink sticky height and reveal controls
-        const margin = - (factor * 55); 
+        // Must not exceed 40% to match the 0.6 scale factor, otherwise it clips the visual canvas!
+        const margin = - (factor * 40); 
         
         document.documentElement.style.setProperty('--sticky-scale', scale);
         document.documentElement.style.setProperty('--sticky-opacity', Math.max(0, opacity));
@@ -312,7 +312,8 @@ function setupStickyMobilePreview() {
         document.documentElement.style.setProperty('--sticky-actions-m', `${actionsM}rem`);
         
         // Keep top padding consistent (managed by CSS and safe areas) but tighten the bottom
-        const paddingBottom = 2.25 - (factor * 2.25);
+        // Leaves exactly 0.5rem of breathing room below the canvas to prevent shadow clipping
+        const paddingBottom = 2.25 - (factor * 1.75); 
         
         const preview = document.querySelector('.preview-section');
         if (preview) {
