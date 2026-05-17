@@ -2456,17 +2456,16 @@ button,
     }
     
     .preview-section {
-        margin: 0 !important;
         border-radius: 0 !important;
         border-top-left-radius: 0 !important;
         border-top-right-radius: 0 !important;
-        padding-top: calc(1.5rem + var(--safe-top)) !important;
-        top: calc(-5.5rem + var(--safe-top)) !important; /* Elegant stuck offset that accounts for safe-top */
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+        margin-top: calc(-1.5rem - var(--safe-top)) !important; /* Stretches panel background under status bar */
+        margin-bottom: 1.5rem !important; /* Retains vital spacing for document flow */
+        padding-top: calc(1.5rem + 2 * var(--safe-top)) !important; /* Pushes header content below the physical notch */
+        top: calc(-5rem - var(--safe-top)) !important; /* Offsets header text off-screen perfectly when stuck */
         transition: none !important; /* Prevent jerky movement in PWA */
-    }
-    
-    .preview-header {
-        margin-top: 0 !important;
     }
     
     .mobile-drawer .drawer-content {
@@ -2494,17 +2493,16 @@ body.standalone-mode .container {
 }
 
 body.standalone-mode .preview-section {
-    margin: 0 !important;
     border-radius: 0 !important;
     border-top-left-radius: 0 !important;
     border-top-right-radius: 0 !important;
-    padding-top: calc(1.5rem + var(--safe-top)) !important;
-    top: calc(-5.5rem + var(--safe-top)) !important; /* Elegant stuck offset that accounts for safe-top */
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    margin-top: calc(-1.5rem - var(--safe-top)) !important; /* Stretches panel background under status bar */
+    margin-bottom: 1.5rem !important; /* Retains vital spacing for document flow */
+    padding-top: calc(1.5rem + 2 * var(--safe-top)) !important; /* Pushes header content below the physical notch */
+    top: calc(-5rem - var(--safe-top)) !important; /* Offsets header text off-screen perfectly when stuck */
     transition: none !important; /* Prevent jerky movement in PWA */
-}
-
-body.standalone-mode .preview-header {
-    margin-top: 0 !important;
 }
 
 body.standalone-mode .mobile-drawer .drawer-content {
