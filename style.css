@@ -2468,6 +2468,8 @@ button,
     
     .preview-header {
         margin-top: 0 !important;
+        opacity: var(--sticky-opacity, 1);
+        transition: opacity 0.2s ease;
     }
     
     .mobile-drawer .drawer-content {
@@ -2507,6 +2509,8 @@ body.standalone-mode .preview-section {
 
 body.standalone-mode .preview-header {
     margin-top: 0 !important;
+    opacity: var(--sticky-opacity, 1);
+    transition: opacity 0.2s ease;
 }
 
 body.standalone-mode .mobile-drawer .drawer-content {
