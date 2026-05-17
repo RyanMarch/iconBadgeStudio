@@ -385,7 +385,9 @@ function handleIconInput(val) {
 function showSuggestions() {
     const dropdown = document.getElementById('icon-dropdown');
     dropdown.classList.add('active');
-    filterSuggestions(document.getElementById('icon-input').value);
+    const input = document.getElementById('icon-input');
+    if (input) input.setAttribute('aria-expanded', 'true');
+    filterSuggestions(input.value);
 }
 
 let selectedIndex = -1;
@@ -412,6 +414,8 @@ function filterSuggestions(val) {
     
     if (filtered.length === 0) {
         dropdown.classList.remove('active');
+        const input = document.getElementById('icon-input');
+        if (input) input.setAttribute('aria-expanded', 'false');
         selectedIndex = -1;
         return;
     }
@@ -423,6 +427,8 @@ function filterSuggestions(val) {
     `).join('');
     
     dropdown.classList.add('active');
+    const input = document.getElementById('icon-input');
+    if (input) input.setAttribute('aria-expanded', 'true');
     lucide.createIcons();
 }
 // Auto-highlight text on focus and tap/click
@@ -483,6 +489,7 @@ document.getElementById('icon-input').addEventListener('keydown', (e) => {
         }
     } else if (e.key === 'Escape') {
         dropdown.classList.remove('active');
+        e.target.setAttribute('aria-expanded', 'false');
     }
 });
 
@@ -498,7 +505,10 @@ function updateSelection(items) {
 // Close dropdown when clicking outside
 document.addEventListener('click', (e) => {
     if (!e.target.closest('.icon-picker-wrapper')) {
-        document.getElementById('icon-dropdown').classList.remove('active');
+        const dropdown = document.getElementById('icon-dropdown');
+        if (dropdown) dropdown.classList.remove('active');
+        const input = document.getElementById('icon-input');
+        if (input) input.setAttribute('aria-expanded', 'false');
     }
 });
 

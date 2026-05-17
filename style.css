@@ -36,6 +36,7 @@
     --dropdown-border: var(--glass-border);
     --dropdown-item-hover-bg: var(--accent);
     --dropdown-item-hover-color: #ffffff;
+    --seo-bg-open: rgba(15, 23, 42, 0.35);
 }
 
 [data-theme="light"] {
@@ -71,6 +72,7 @@
     --dropdown-border: var(--glass-border);
     --dropdown-item-hover-bg: var(--accent);
     --dropdown-item-hover-color: #ffffff;
+    --seo-bg-open: rgba(255, 255, 255, 0.45);
 }
 
 @media (prefers-color-scheme: light) {
@@ -107,6 +109,7 @@
         --dropdown-border: var(--glass-border);
         --dropdown-item-hover-bg: var(--accent);
         --dropdown-item-hover-color: #ffffff;
+        --seo-bg-open: rgba(255, 255, 255, 0.45);
     }
 }
 
@@ -2839,5 +2842,136 @@ button,
     font-weight: 600;
     color: #007aff;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+/* SEO Features Card (Sleek Collapsible Panel) */
+.seo-features-card {
+    padding-top: 1rem;
+    border-top: 1px solid var(--glass-border);
+    flex-shrink: 0;
+}
+
+.seo-details {
+    background: var(--control-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.seo-details[open] {
+    background: var(--seo-bg-open);
+    box-shadow: 0 4px 20px var(--shadow-color);
+}
+
+.seo-summary {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    padding: 0.75rem 1rem;
+    cursor: pointer;
+    user-select: none;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-main);
+    list-style: none; /* Hide default arrow */
+}
+
+.seo-summary::-webkit-details-marker {
+    display: none; /* Hide default arrow in Safari */
+}
+
+.seo-info-icon {
+    width: 14px;
+    height: 14px;
+    color: var(--accent);
+    flex-shrink: 0;
+}
+
+.seo-arrow-icon {
+    width: 14px;
+    height: 14px;
+    margin-left: auto;
+    color: var(--text-muted);
+    transition: transform 0.3s ease;
+}
+
+.seo-details[open] .seo-arrow-icon {
+    transform: rotate(180deg);
+}
+
+.seo-details-content {
+    padding: 0 1rem 1rem 1rem;
+    font-size: 0.72rem;
+    line-height: 1.45;
+    color: var(--text-muted);
+    border-top: 1px solid var(--glass-border);
+    margin-top: 0.25rem;
+    padding-top: 0.75rem;
+}
+
+.seo-details-content h2 {
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--text-main);
+    margin-bottom: 0.5rem;
+    line-height: 1.2;
+}
+
+.seo-details-content h3 {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--text-main);
+    margin: 0.75rem 0 0.4rem 0;
+}
+
+.seo-details-content p {
+    margin-bottom: 0.5rem;
+}
+
+.seo-details-content ul {
+    padding-left: 1rem;
+    margin: 0;
+}
+
+.seo-details-content li {
+    margin-bottom: 0.4rem;
+}
+
+.seo-details-content li strong {
+    color: var(--text-main);
+}
+
+/* Keyboard Navigation Focus States (WCAG 2.4.7 Focus Visible Success Criterion) */
+:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.4);
+}
+
+/* Explicit custom states to match high-fidelity theme styling */
+button:focus-visible,
+input[type="text"]:focus-visible,
+input[type="range"]:focus-visible,
+.shape-btn:focus-visible,
+.toolbar-btn:focus-visible,
+.custom-color-wrapper input[type="color"]:focus-visible,
+#theme-toggle:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+}
+
+/* Specific reset for range thumbs focus states */
+input[type="range"]:focus-visible::-webkit-slider-thumb {
+    outline: 2px solid var(--text-main);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px var(--accent);
+}
+
+input[type="range"]:focus-visible::-moz-range-thumb {
+    outline: 2px solid var(--text-main);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px var(--accent);
 }
 
