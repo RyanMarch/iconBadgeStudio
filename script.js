@@ -2027,9 +2027,18 @@ function positionIosPrompt() {
 }
 
 function initIosPwaPrompt() {
-    // Detect iOS / iPadOS
+    // Detect iOS / iPadOS (with support for Safari's Responsive Design Mode iPad presets)
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || 
-                  (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+                  (navigator.platform === 'MacIntel' && (
+                      navigator.maxTouchPoints > 0 || 
+                      'ontouchstart' in window || 
+                      window.matchMedia('(pointer: coarse)').matches ||
+                      ((window.screen.width === 1133 && window.screen.height === 744) || (window.screen.width === 744 && window.screen.height === 1133)) || // iPad mini 6
+                      ((window.screen.width === 1024 && window.screen.height === 768) || (window.screen.width === 768 && window.screen.height === 1024)) || // iPad 1-9
+                      ((window.screen.width === 1180 && window.screen.height === 820) || (window.screen.width === 820 && window.screen.height === 1180)) || // iPad Air / iPad 10
+                      ((window.screen.width === 1194 && window.screen.height === 834) || (window.screen.width === 834 && window.screen.height === 1194)) || // iPad Pro 11
+                      ((window.screen.width === 1366 && window.screen.height === 1024) || (window.screen.width === 1024 && window.screen.height === 1366))  // iPad Pro 12.9
+                  ));
                   
     // Detect Standalone Mode (already added to home screen)
     const isStandalone = window.navigator.standalone === true || 
@@ -2144,7 +2153,16 @@ function initDesktopPwaPrompt(forcedType) {
 
     // Detect iOS / iPadOS (they use the iOS prompt)
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || 
-                  (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+                  (navigator.platform === 'MacIntel' && (
+                      navigator.maxTouchPoints > 0 || 
+                      'ontouchstart' in window || 
+                      window.matchMedia('(pointer: coarse)').matches ||
+                      ((window.screen.width === 1133 && window.screen.height === 744) || (window.screen.width === 744 && window.screen.height === 1133)) || // iPad mini 6
+                      ((window.screen.width === 1024 && window.screen.height === 768) || (window.screen.width === 768 && window.screen.height === 1024)) || // iPad 1-9
+                      ((window.screen.width === 1180 && window.screen.height === 820) || (window.screen.width === 820 && window.screen.height === 1180)) || // iPad Air / iPad 10
+                      ((window.screen.width === 1194 && window.screen.height === 834) || (window.screen.width === 834 && window.screen.height === 1194)) || // iPad Pro 11
+                      ((window.screen.width === 1366 && window.screen.height === 1024) || (window.screen.width === 1024 && window.screen.height === 1366))  // iPad Pro 12.9
+                  ));
     if (isIOS) return;
 
     // Determine target prompt type
