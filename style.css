@@ -2435,8 +2435,8 @@ button,
     }
 }
 
-/* 2.5 Standalone / PWA (Added to Home Screen) Mode Optimization */
-@media ((display-mode: standalone) or (display-mode: minimal-ui)) and (max-width: 1150px) {
+/* 2.5 Standalone / PWA (Added to Home Screen) Mode Optimization (Portrait Only) */
+@media ((display-mode: standalone) or (display-mode: minimal-ui)) and (max-width: 1150px) and (min-height: 501px) {
     body {
         padding: 0 !important;
         margin: 0 !important;
@@ -2477,44 +2477,46 @@ button,
     }
 }
 
-/* Also support it via body.standalone-mode class added by JavaScript */
-body.standalone-mode {
-    padding: 0 !important;
-    margin: 0 !important;
-    background-color: var(--bg-color) !important;
-    height: auto !important;
-    min-height: 100vh !important;
-    min-height: 100dvh !important;
-}
+/* Also support it via body.standalone-mode class added by JavaScript (Portrait Only) */
+@media (max-width: 1150px) and (min-height: 501px) {
+    body.standalone-mode {
+        padding: 0 !important;
+        margin: 0 !important;
+        background-color: var(--bg-color) !important;
+        height: auto !important;
+        min-height: 100vh !important;
+        min-height: 100dvh !important;
+    }
 
-body.standalone-mode .container {
-    border-radius: 0 !important;
-    border: none !important;
-    box-shadow: none !important;
-    padding: 0 !important;
-    margin: 0 !important;
-    max-width: none !important;
-    height: auto !important;
-}
+    body.standalone-mode .container {
+        border-radius: 0 !important;
+        border: none !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        max-width: none !important;
+        height: auto !important;
+    }
 
-body.standalone-mode .preview-section {
-    border-radius: 0 !important;
-    margin-left: 0 !important;
-    margin-right: 0 !important;
-    margin-top: 0 !important;
-    padding-top: calc(1.5rem + var(--safe-top)) !important;
-    top: -4.5rem !important;
-    transition: none !important;
-}
+    body.standalone-mode .preview-section {
+        border-radius: 0 !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+        margin-top: 0 !important;
+        padding-top: calc(1.5rem + var(--safe-top)) !important;
+        top: -4.5rem !important;
+        transition: none !important;
+    }
 
-body.standalone-mode .preview-header {
-    margin-top: 0 !important;
-    opacity: var(--sticky-opacity, 1);
-    transition: opacity 0.2s ease;
-}
+    body.standalone-mode .preview-header {
+        margin-top: 0 !important;
+        opacity: var(--sticky-opacity, 1);
+        transition: opacity 0.2s ease;
+    }
 
-body.standalone-mode .mobile-drawer .drawer-content {
-    padding-bottom: calc(2rem + var(--safe-bottom)) !important;
+    body.standalone-mode .mobile-drawer .drawer-content {
+        padding-bottom: calc(2rem + var(--safe-bottom)) !important;
+    }
 }
 
 /* 3. Custom iOS PWA Installer Prompt Styles & Desktop PWA Installer Prompt Styles */
