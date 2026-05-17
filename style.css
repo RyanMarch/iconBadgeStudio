@@ -2472,8 +2472,9 @@ button,
         transition: opacity 0.2s ease;
     }
     
-    .mobile-drawer .drawer-content {
-        padding-bottom: calc(2rem + var(--safe-bottom)) !important;
+    .mobile-drawer .drawer-content,
+    .controls-section {
+        padding-bottom: calc(4rem + var(--safe-bottom)) !important;
     }
 }
 
@@ -2514,8 +2515,9 @@ button,
         transition: opacity 0.2s ease;
     }
 
-    body.standalone-mode .mobile-drawer .drawer-content {
-        padding-bottom: calc(2rem + var(--safe-bottom)) !important;
+    body.standalone-mode .mobile-drawer .drawer-content,
+    body.standalone-mode .controls-section {
+        padding-bottom: calc(4rem + var(--safe-bottom)) !important;
     }
 }
 
