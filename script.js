@@ -45,6 +45,7 @@ const state = Object.keys(APP_CONFIG).reduce((acc, key) => {
 
 let deferredPrompt = null;
 let desktopPromptType = null; // 'chromium' or 'safari'
+let suppressHaptic = false;
 
 function syncStateToURL() {
     const url = new URL(window.location);
@@ -134,6 +135,15 @@ function loadStateFromURL() {
 }
 
 function init() {
+    suppressHaptic = true; // Suppress haptics during initial render/restore
+
+    // Detect Standalone Mode (already added to home screen / PWA)
+    const isStandalone = window.navigator.standalone === true || 
+                         window.matchMedia('(display-mode: standalone)').matches;
+    if (isStandalone) {
+        document.body.classList.add('standalone-mode');
+    }
+
     // Detect touch-primary or touch-emulated devices (like iPad, mobile)
     if ('ontouchstart' in window || navigator.maxTouchPoints > 0 || navigator.msMaxTouchPoints > 0) {
         document.body.classList.add('touch-device');
@@ -225,6 +235,8 @@ function init() {
     registerServiceWorker();
     initIosPwaPrompt();
     initDesktopPwaPrompt();
+    
+    suppressHaptic = false; // Restore haptics after load
 }
 
 function setupStickyMobilePreview() {
@@ -299,13 +311,11 @@ function setupStickyMobilePreview() {
         document.documentElement.style.setProperty('--sticky-actions-h', `${actionsH}px`);
         document.documentElement.style.setProperty('--sticky-actions-m', `${actionsM}rem`);
         
-        // Keep top padding consistent but tighten the bottom
-        const paddingTop = 2.25;
+        // Keep top padding consistent (managed by CSS and safe areas) but tighten the bottom
         const paddingBottom = 2.25 - (factor * 1.25); 
         
         const preview = document.querySelector('.preview-section');
         if (preview) {
-            preview.style.paddingTop = `${paddingTop}rem`;
             preview.style.paddingBottom = `${paddingBottom}rem`;
         }
     }, { passive: true });
@@ -678,6 +688,7 @@ function setBaseColor2(c) {
 }
 
 function setBaseGradientType(t) {
+    triggerHaptic();
     state.gradientType = t;
     
     // Update active state for buttons
@@ -1095,6 +1106,7 @@ function setupPaste() {
 }
 
 function resetBaseIcon() {
+    suppressHaptic = true;
     state.customBaseIcon = null;
     localStorage.removeItem('iconStudio_baseIcon');
     const uploadInput = document.getElementById('base-icon-upload');
@@ -1116,9 +1128,13 @@ function resetBaseIcon() {
     updateBaseControls();
     updateBasePreview();
     syncStateToURL();
+    
+    suppressHaptic = false;
+    triggerHaptic();
 }
 
 function setBadgePosition(pos) {
+    triggerHaptic();
     state.badgePosition = pos;
     const canvas = document.getElementById('icon-canvas');
     const wrap = document.getElementById('badge-wrap');
@@ -1159,6 +1175,7 @@ function getContrastColor(hex) {
 }
 
 function setColor(c) {
+    triggerHaptic();
     state.color = c;
     document.getElementById('badge-shape').style.backgroundColor = c;
     document.getElementById('custom-color').value = c;
@@ -1181,6 +1198,7 @@ function setColor(c) {
 }
 
 function setIcon(name, shouldHideDropdown = true) {
+    triggerHaptic();
     if (shouldHideDropdown) {
         document.getElementById('icon-dropdown').classList.remove('active');
         selectedIndex = -1;
@@ -1276,6 +1294,7 @@ function setInnerScale(v) {
 }
 
 function toggleShadows(v) {
+    triggerHaptic();
     state.showShadows = v;
     
     // Sync both toggles
@@ -1293,6 +1312,8 @@ function toggleShadows(v) {
 }
 
 function resetDefaults() {
+    suppressHaptic = true;
+    
     // 1. Reset file input but preserve the current state.customBaseIcon
     const uploadInput = document.getElementById('base-icon-upload');
     if (uploadInput) uploadInput.value = '';
@@ -1330,9 +1351,13 @@ function resetDefaults() {
     
     // Sync final state to URL
     syncStateToURL();
+    
+    suppressHaptic = false;
+    triggerHaptic();
 }
 
 function toggleScreenshotMode() {
+    triggerHaptic();
     document.body.classList.toggle('screenshot-mode');
     updateAppScale();
     syncStateToURL();
@@ -1496,6 +1521,7 @@ function applyPixelFilter(canvas, effect) {
 }
 
 async function exportPNG() {
+    triggerHaptic();
     // Show overlay
     let overlay = document.getElementById('export-overlay');
     if (!overlay) {
@@ -2086,11 +2112,25 @@ function collapseIosPrompt(e) {
 
 // Progressive sensory haptic vibration clicks
 function triggerHaptic() {
+    if (suppressHaptic) return;
+
+    // 1. Standard Vibration API (Android, Chrome, Firefox)
     if ('vibrate' in navigator) {
         try {
             navigator.vibrate(12); // Short crisp haptic tap
         } catch (e) {
             // Silently absorb security constraints in some browsers
+        }
+    }
+
+    // 2. iOS Safari / PWA WebKit Haptic Workaround (iOS 18+)
+    // Triggers click on label for checkbox switch to emit a native tactile pulse
+    const hapticLabel = document.getElementById('haptic-label');
+    if (hapticLabel) {
+        try {
+            hapticLabel.click();
+        } catch (e) {
+            // Silently absorb
         }
     }
 }
