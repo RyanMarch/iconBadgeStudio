@@ -2035,17 +2035,18 @@ function positionIosPrompt() {
     const prompt = document.getElementById('ios-pwa-prompt');
     if (!prompt) return;
     
-    const isMobile = window.innerWidth <= 899;
+    // Check if we are in the single-column mobile layout
+    const isSingleColumnMobile = window.innerWidth <= 899 && !window.matchMedia('(orientation: landscape) and (max-height: 500px)').matches;
     const controlsSections = document.querySelectorAll('.controls-section');
     const lastControlsSection = controlsSections[controlsSections.length - 1];
     
-    if (isMobile) {
-        // On mobile, sit below the main container as a separate stacked panel
+    if (isSingleColumnMobile) {
+        // On single-column mobile, sit below the main container as a separate stacked panel
         if (prompt.parentElement !== document.body) {
             document.body.appendChild(prompt);
         }
     } else {
-        // On tablet/iPad/desktop, sit at the very end of the last controls sidebar (Badge controls)
+        // On tablet/iPad/desktop/landscape mobile, sit at the very end of the last controls sidebar (Badge controls)
         if (lastControlsSection && prompt.parentElement !== lastControlsSection) {
             lastControlsSection.appendChild(prompt);
         }
@@ -2059,11 +2060,11 @@ function initIosPwaPrompt() {
                       navigator.maxTouchPoints > 0 || 
                       'ontouchstart' in window || 
                       window.matchMedia('(pointer: coarse)').matches ||
-                      ((window.screen.width === 1133 && window.screen.height === 744) || (window.screen.width === 744 && window.screen.height === 1133)) || // iPad mini 6
-                      ((window.screen.width === 1024 && window.screen.height === 768) || (window.screen.width === 768 && window.screen.height === 1024)) || // iPad 1-9
-                      ((window.screen.width === 1180 && window.screen.height === 820) || (window.screen.width === 820 && window.screen.height === 1180)) || // iPad Air / iPad 10
-                      ((window.screen.width === 1194 && window.screen.height === 834) || (window.screen.width === 834 && window.screen.height === 1194)) || // iPad Pro 11
-                      ((window.screen.width === 1366 && window.screen.height === 1024) || (window.screen.width === 1024 && window.screen.height === 1366))  // iPad Pro 12.9
+                      ((window.innerWidth === 1133 && window.innerHeight === 744) || (window.innerWidth === 744 && window.innerHeight === 1133)) || // iPad mini 6
+                      ((window.innerWidth === 1024 && window.innerHeight === 768) || (window.innerWidth === 768 && window.innerHeight === 1024)) || // iPad 1-9
+                      ((window.innerWidth === 1180 && window.innerHeight === 820) || (window.innerWidth === 820 && window.innerHeight === 1180)) || // iPad Air / iPad 10
+                      ((window.innerWidth === 1194 && window.innerHeight === 834) || (window.innerWidth === 834 && window.innerHeight === 1194)) || // iPad Pro 11
+                      ((window.innerWidth === 1366 && window.innerHeight === 1024) || (window.innerWidth === 1024 && window.innerHeight === 1366))  // iPad Pro 12.9
                   ));
                   
     // Detect Standalone Mode (already added to home screen)
@@ -2163,17 +2164,18 @@ function positionDesktopPrompt() {
     const prompt = document.getElementById('desktop-pwa-prompt');
     if (!prompt) return;
     
-    const isMobile = window.innerWidth <= 1150;
+    // Check if we are in the single-column mobile layout
+    const isSingleColumnMobile = window.innerWidth <= 1150 && !window.matchMedia('(orientation: landscape) and (max-height: 500px)').matches;
     const controlsSections = document.querySelectorAll('.controls-section');
     const lastControlsSection = controlsSections[controlsSections.length - 1];
     
-    if (isMobile) {
+    if (isSingleColumnMobile) {
         // On mobile, sit below the main container as a separate stacked panel
         if (prompt.parentElement !== document.body) {
             document.body.appendChild(prompt);
         }
     } else {
-        // On tablet/iPad/desktop, sit at the very end of the last controls sidebar (Badge controls)
+        // On tablet/iPad/desktop/landscape mobile, sit at the very end of the last controls sidebar (Badge controls)
         if (lastControlsSection && prompt.parentElement !== lastControlsSection) {
             lastControlsSection.appendChild(prompt);
         }
@@ -2197,11 +2199,11 @@ function initDesktopPwaPrompt(forcedType) {
                       navigator.maxTouchPoints > 0 || 
                       'ontouchstart' in window || 
                       window.matchMedia('(pointer: coarse)').matches ||
-                      ((window.screen.width === 1133 && window.screen.height === 744) || (window.screen.width === 744 && window.screen.height === 1133)) || // iPad mini 6
-                      ((window.screen.width === 1024 && window.screen.height === 768) || (window.screen.width === 768 && window.screen.height === 1024)) || // iPad 1-9
-                      ((window.screen.width === 1180 && window.screen.height === 820) || (window.screen.width === 820 && window.screen.height === 1180)) || // iPad Air / iPad 10
-                      ((window.screen.width === 1194 && window.screen.height === 834) || (window.screen.width === 834 && window.screen.height === 1194)) || // iPad Pro 11
-                      ((window.screen.width === 1366 && window.screen.height === 1024) || (window.screen.width === 1024 && window.screen.height === 1366))  // iPad Pro 12.9
+                      ((window.innerWidth === 1133 && window.innerHeight === 744) || (window.innerWidth === 744 && window.innerHeight === 1133)) || // iPad mini 6
+                      ((window.innerWidth === 1024 && window.innerHeight === 768) || (window.innerWidth === 768 && window.innerHeight === 1024)) || // iPad 1-9
+                      ((window.innerWidth === 1180 && window.innerHeight === 820) || (window.innerWidth === 820 && window.innerHeight === 1180)) || // iPad Air / iPad 10
+                      ((window.innerWidth === 1194 && window.innerHeight === 834) || (window.innerWidth === 834 && window.innerHeight === 1194)) || // iPad Pro 11
+                      ((window.innerWidth === 1366 && window.innerHeight === 1024) || (window.innerWidth === 1024 && window.innerHeight === 1366))  // iPad Pro 12.9
                   ));
     if (isIOS) return;
 
